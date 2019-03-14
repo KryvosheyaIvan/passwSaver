@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    QPixmap pix("D:/QTprojects/pswdSaver/pswdSaver/keysApp.png");
+    QPixmap pix(":/img/keysApp.png");
     ui->pictLabel->setPixmap(pix.scaled(150,150,Qt::KeepAspectRatio));
 }
 

@@ -34,3 +34,6 @@ FORMS += \
         mainwindow.ui
 
 RC_ICONS = icon/keys.ico
+
+RESOURCES += \
+    resource.qrc
