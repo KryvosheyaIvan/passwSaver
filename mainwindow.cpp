@@ -2,6 +2,11 @@
 #include "ui_mainwindow.h"
 #include <QPixmap>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
+
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -10,6 +15,32 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     QPixmap pix(":/img/keysApp.png");
     ui->pictLabel->setPixmap(pix.scaled(150,150,Qt::KeepAspectRatio));
+     ui->debugLabel->setText("App starting...");
+
+    /* Create file of registered users of the pwdSaver app, if it does not exist yet */
+    QString appDir = QCoreApplication::applicationDirPath();
+    QFile file(appDir + "/users.json");
+
+    /* Show some info at the bottom of the app */
+    if (file.exists())
+    {
+        ui->debugLabel->setText("Users accounts founded.");
+    }
+    else{
+        ui->debugLabel->setText("Creating users database...");
+    }
+
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+
+        QTextStream out(&file);
+        out << "The magic number is: " << 49 << "\n";
+    }
+    else {
+        qDebug() << "Fail to open file";
+       // QTextStream out(&file);
+       // out << "{}" << endl;
+    }
+
 }
 
 MainWindow::~MainWindow()
