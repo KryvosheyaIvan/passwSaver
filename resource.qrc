@@ -2,7 +2,4 @@
     <qresource prefix="/">
         <file>img/keysApp.png</file>
     </qresource>
-    <qresource prefix="/doc">
-        <file>doc/users.json</file>
-    </qresource>
 </RCC>

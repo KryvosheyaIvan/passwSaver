@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+class userProfiles;
+
 namespace Ui {
 class MainWindow;
 }
@@ -18,8 +20,13 @@ public:
 private slots:
     void on_loginButton_clicked();
 
+    void on_regButton_clicked();
+
 private:
     Ui::MainWindow *ui;
+    userProfiles *pUserProfiles;
 };
+
+
 
 #endif // MAINWINDOW_H

@@ -7,6 +7,7 @@
 #include <QTextStream>
 
 #include <QDebug>
+#include "modules/userProfiles/userprofiles.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -60,4 +61,9 @@ void MainWindow::on_loginButton_clicked()
     else {
         QMessageBox::warning(this, "Login", "Username and password is wrong!");
     }
+}
+
+void MainWindow::on_regButton_clicked()
+{
+    pUserProfiles->addUserProfile(ui->userLineEdit->text(),ui->passwLineEdit->text(),0);
 }
