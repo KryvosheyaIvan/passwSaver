@@ -19,26 +19,9 @@ MainWindow::MainWindow(QWidget *parent) :
      ui->debugLabel->setText("App starting...");
 
     /* Create file of registered users of the pwdSaver app, if it does not exist yet */
-    QString appDir = QCoreApplication::applicationDirPath();
-    QFile file(appDir + "/users.json");
+    //QString appDir = QCoreApplication::applicationDirPath();
+    //QFile file(appDir + "/users.json");
 
-    /* Show some info at the bottom of the app */
-    if (file.exists())
-    {
-        ui->debugLabel->setText("Users accounts founded.");
-    }
-    else{
-        ui->debugLabel->setText("Creating users database...");
-    }
-
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        file.close();
-    }
-    else {
-        qDebug() << "Fail to open file";
-       // QTextStream out(&file);
-       // out << "{}" << endl;
-    }
 
 }
 

@@ -33,23 +33,25 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
     QString appDir = QCoreApplication::applicationDirPath();
     QFile file(appDir + "/users.json");
 
-    if ( !file.open(QIODevice::ReadOnly /*WriteOnly*/ | QIODevice::Text)) {
+    if ( !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "addUserProfile: failed to open file" << endl;
         return false;
     }
     QString strFile = file.readAll();
 
-    //first need to read from file and then append
+    //first need to read from file (in order to know what was written previously)
     QJsonDocument jsReadDoc;
-    //jsReadDoc = QJsonDocument::fromJson(file.readAll());
     jsReadDoc = QJsonDocument::fromJson(strFile.toUtf8());
+    file.close();
 
+    /* For debug only
     if (jsReadDoc.isArray()) {
         qDebug() << "doc is array" << endl;
     }
     else {
         qDebug() << "doc is not an array" << endl;
     }
+    */
 
     if (jsReadDoc.isEmpty()) {
         qDebug() << "doc is empty" << endl;
@@ -61,8 +63,6 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
     QByteArray byteArray = jsReadDoc.toJson();
     qDebug() << byteArray << endl;
 
-
-
     QJsonObject jsObject;
     jsObject["username"] = username;
     jsObject["password"] = pswd;
@@ -70,26 +70,25 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
     QJsonValue jsValue(jsObject);
 
     QJsonArray jsArray;
+
+    if ( jsReadDoc.isArray()) {
+        qDebug() << "doc is array" << endl;
+        jsArray = jsReadDoc.array();        // copying old array
+    }
+
     jsArray.append(jsValue);
 
+    //qDebug() << "freeing jsReadDoc" << endl;
+    //~jsReadDoc();
+    jsReadDoc.setArray(jsArray);
 
 
-
-    file.close();
-    if ( !file.open(QIODevice::WriteOnly/* | QIODevice::Text*/)) {
+    if ( !file.open(QIODevice::WriteOnly)) {
         qDebug() << "addUserProfile: failed to open file 2" << endl;
         return false;
     }
-
-    QJsonDocument jsDoc(jsArray);
-    file.write(jsDoc.toJson());
+    file.write(jsReadDoc.toJson());
     file.close();
-
-
-    //file.write(jsDoc.toJson());
-
-    qDebug() << "username: " + username << endl;
-    qDebug() << "password: " + pswd << endl;
 
     return true;
 }
