@@ -32,9 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-
-        QTextStream out(&file);
-        out << "The magic number is: " << 49 << "\n";
+        file.close();
     }
     else {
         qDebug() << "Fail to open file";
@@ -65,5 +63,16 @@ void MainWindow::on_loginButton_clicked()
 
 void MainWindow::on_regButton_clicked()
 {
-    pUserProfiles->addUserProfile(ui->userLineEdit->text(),ui->passwLineEdit->text(),0);
+    pUserProfiles->addUserProfile(ui->userLineEdit->text(),ui->passwLineEdit->text(), this, 0);//, QJsonObject &jsonFile);
 }
+
+
+
+
+
+
+
+
+
+
+

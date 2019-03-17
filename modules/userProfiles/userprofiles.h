@@ -4,12 +4,14 @@
 #include <QObject>
 #include <QFile>
 
+#define MIN_STRING_LEN 5
+
 class userProfiles : public QObject
 {
     Q_OBJECT
 public:
     explicit userProfiles(QObject *parent = 0);
-    void addUserProfile(QString username, QString pswd, QFile* dest);
+    bool addUserProfile(QString username, QString pswd, QWidget *parent, QJsonObject *jsonFile);
 
 signals:
 

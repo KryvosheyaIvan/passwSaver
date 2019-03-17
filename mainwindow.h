@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QFile>
 
 class userProfiles;
 
@@ -25,6 +26,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     userProfiles *pUserProfiles;
+    QFile *fileUsers;
 };
 
 
