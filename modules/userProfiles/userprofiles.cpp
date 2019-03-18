@@ -44,14 +44,6 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
     jsReadDoc = QJsonDocument::fromJson(strFile.toUtf8());
     file.close();
 
-    /* For debug only
-    if (jsReadDoc.isArray()) {
-        qDebug() << "doc is array" << endl;
-    }
-    else {
-        qDebug() << "doc is not an array" << endl;
-    }
-    */
 
     if (jsReadDoc.isEmpty()) {
         qDebug() << "doc is empty" << endl;
