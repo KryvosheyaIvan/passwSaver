@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QFile>
+#include "modules/passwWindow/passw.h"
 
 class userProfiles;
 
@@ -27,6 +28,7 @@ private:
     Ui::MainWindow *ui;
     userProfiles *pUserProfiles;
     QFile *fileUsers;
+    passw *pPassw;
 };
 
 

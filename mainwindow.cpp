@@ -38,6 +38,11 @@ void MainWindow::on_loginButton_clicked()
 
     if(appUsername == "test" && appPassword == "test") {
         QMessageBox::information(this, "Login", "Username and password is correct");
+
+        hide(); //hide main window
+        pPassw = new passw();
+        pPassw->show();
+
     }
     else {
         QMessageBox::warning(this, "Login", "Username and password is wrong!");
