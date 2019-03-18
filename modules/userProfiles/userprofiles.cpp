@@ -137,10 +137,70 @@ bool userProfiles::isUsernameExist(QString username)
     return false;
 }
 
+/* Method returns true if current passwords exists */
+bool userProfiles::isPswdExist(QString pswd)
+{
+    /* Open file for reading */
+    QString appDir = QCoreApplication::applicationDirPath();
+    QFile file(appDir + "/users.json");
+
+    if ( !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "isPswdExist: failed to open file" << endl;
+        return false;
+    }
+
+    QString strFile = file.readAll();
+    QJsonDocument jsReadDoc;
+    jsReadDoc = QJsonDocument::fromJson(strFile.toUtf8());
+    file.close();
+
+    QJsonArray jsArray = jsReadDoc.array();
+    QJsonValue jsVal;
+    QJsonObject jsObj;
+    QJsonArray::iterator it;
+    int i = 0;
+    for( it = jsArray.begin(); it != jsArray.end(); it++)
+    {
+       jsVal = jsArray.at(i);
+       jsObj = jsVal.toObject();
+       if ( jsObj.contains("password"))
+       {
+        qDebug() << "[" << i << "]" << "Ok!" << endl;
+        jsVal = jsObj.value("username");
+        if ( jsVal.toString() == pswd)
+        {
+            qDebug() << "current pswd was previously registered!" << endl;
+            /* If we here then current pswd was previously registered! */
+            return true;
+        }
+       }
+       i++;
+    }
+
+    /* current password was not registered */
+    return false;
+}
 
 
 
+/* Method called when user tries to Log In */
+bool userProfiles::Login(QString username, QString pswd, QWidget *parent)
+{
+    bool isUsernameOk, isPswdOk;
 
+    /* Check whether current user and password was registered earlier */
+    isUsernameOk = isUsernameExist(username);
+    isPswdOk = isPswdExist(pswd);
+
+    if( isUsernameOk && isPswdOk ) {
+       return true;
+    }
+    else {
+        return false;
+    }
+
+    return false;
+}
 
 
 

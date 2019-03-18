@@ -11,10 +11,12 @@ class userProfiles : public QObject
     Q_OBJECT
 public:
     explicit userProfiles(QObject *parent = 0);
-    bool addUserProfile(QString username, QString pswd, QWidget *parent);
+    bool addUserProfile(QString username, QString pswd, QWidget *parent);       // registration
+    bool Login(QString username, QString pswd, QWidget *parent);                // logging in
 
 private:
     bool isUsernameExist(QString username);
+    bool isPswdExist(QString pswd);
 
 signals:
 

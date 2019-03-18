@@ -36,7 +36,11 @@ void MainWindow::on_loginButton_clicked()
     QString appUsername = ui->userLineEdit->text();
     QString appPassword = ui->passwLineEdit->text();
 
-    if(appUsername == "test" && appPassword == "test") {
+    // here it is needed to compare username and password to thos that was
+    // registered earlier
+    bool isLogOk = pUserProfiles->Login(appUsername, appPassword, this);
+
+    if(isLogOk) {
         QMessageBox::information(this, "Login", "Username and password is correct");
 
         hide(); //hide main window
@@ -45,7 +49,8 @@ void MainWindow::on_loginButton_clicked()
 
     }
     else {
-        QMessageBox::warning(this, "Login", "Username and password is wrong!");
+        QMessageBox::information(this, "Login", "Username and/or password is wrong!\n"
+                                                 "Let's get another try.");
     }
 }
 
