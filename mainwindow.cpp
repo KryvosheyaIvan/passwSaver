@@ -46,8 +46,9 @@ void MainWindow::on_loginButton_clicked()
 
 void MainWindow::on_regButton_clicked()
 {
-    bool isAdded = pUserProfiles->addUserProfile(ui->userLineEdit->text(),ui->passwLineEdit->text(), this, 0);//, QJsonObject &jsonFile);
+    bool isAdded = pUserProfiles->addUserProfile(ui->userLineEdit->text(),ui->passwLineEdit->text(), this);//, QJsonObject &jsonFile);
 
+    /* Display message if registration was successful */
     if (isAdded) {
        QMessageBox::information(this, "User registration", "New user was registered");
     }

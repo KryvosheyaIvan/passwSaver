@@ -18,7 +18,7 @@ userProfiles::userProfiles(QObject *parent) : QObject(parent)
  * Adding user profile to file
  * returns true if success
 */
-bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *parent, QJsonObject *jsonFile)
+bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *parent)
 {
     if(username.length() < MIN_STRING_LEN) {
         QMessageBox::information(parent, "Incorrect value", "Too short username");
@@ -68,6 +68,15 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
         jsArray = jsReadDoc.array();        // copying old array
     }
 
+    //need to know whether that username was not already registered
+    if ( isUsernameExist(username) )
+    {
+        QMessageBox::information(parent, "Registration", "That user was already registered!\n"
+                                                         "Please choose another username..."
+                                                         );
+        return false;
+    }
+
     jsArray.append(jsValue);
 
     //qDebug() << "freeing jsReadDoc" << endl;
@@ -84,4 +93,63 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
 
     return true;
 }
+
+bool userProfiles::isUsernameExist(QString username)
+{
+    /* Open file for reading */
+    QString appDir = QCoreApplication::applicationDirPath();
+    QFile file(appDir + "/users.json");
+
+    if ( !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "isUsernameExist: failed to open file" << endl;
+        return false;
+    }
+
+    QString strFile = file.readAll();
+    QJsonDocument jsReadDoc;
+    jsReadDoc = QJsonDocument::fromJson(strFile.toUtf8());
+    file.close();
+
+    QJsonArray jsArray = jsReadDoc.array();
+    QJsonValue jsVal;
+    QJsonObject jsObj;
+    QJsonArray::iterator it;
+    int i = 0;
+    for( it = jsArray.begin(); it != jsArray.end(); it++)
+    {
+       jsVal = jsArray.at(i);
+       jsObj = jsVal.toObject();
+       if ( jsObj.contains("username"))
+       {
+        //qDebug() << "[" << i << "]" << "Ok!" << endl;
+        jsVal = jsObj.value("username");
+        if ( jsVal.toString() == username)
+        {
+            qDebug() << "current user was previously registered!" << endl;
+            /* If we here then current user was previously registered! */
+            return true;
+        }
+       }
+       i++;
+    }
+
+    /* current username is unique */
+    return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
