@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QPixmap pix(":/img/keysApp.png");
     ui->pictLabel->setPixmap(pix.scaled(150,150,Qt::KeepAspectRatio));
-     ui->debugLabel->setText("App starting...");
+
 
     /* Create file of registered users of the pwdSaver app, if it does not exist yet */
     QFile checkFile("users.json");
@@ -84,13 +84,15 @@ void MainWindow::on_regButton_clicked()
     }
 }
 
-
-
-
-
-
-
-
-
-
-
+/* Set password readable/unreadable */
+void MainWindow::on_toolButton_toggled(bool checked)
+{
+   if(checked)
+   {
+       ui->passwLineEdit->setEchoMode(QLineEdit::Password);
+   }
+   else
+   {
+     ui->passwLineEdit->setEchoMode(QLineEdit::Normal);
+   }
+}

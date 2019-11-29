@@ -24,6 +24,9 @@ private slots:
 
     void on_regButton_clicked();
 
+    /* Eye button clicked */
+    void on_toolButton_toggled(bool checked);
+
 private:
     Ui::MainWindow *ui;
     userProfiles *pUserProfiles;

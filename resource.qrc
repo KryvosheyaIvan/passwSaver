@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>img/keysApp.png</file>
         <file>img/search.png</file>
+        <file>img/eye.png</file>
+        <file>img/eye_crossed.png</file>
     </qresource>
 </RCC>
