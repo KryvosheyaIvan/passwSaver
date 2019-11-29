@@ -2,6 +2,7 @@
 #define PASSW_H
 
 #include <QMainWindow>
+//#include <QMenuBar>
 
 namespace Ui {
 class passw;

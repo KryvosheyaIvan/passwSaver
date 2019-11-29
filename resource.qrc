@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>img/keysApp.png</file>
+        <file>img/search.png</file>
     </qresource>
 </RCC>

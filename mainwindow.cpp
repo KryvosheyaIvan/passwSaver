@@ -7,6 +7,7 @@
 #include <QTextStream>
 
 #include <QDebug>
+#include <QMenuBar>
 #include "modules/userProfiles/userprofiles.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -14,14 +15,30 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setWindowTitle(tr("Password Saver"));
+
     QPixmap pix(":/img/keysApp.png");
     ui->pictLabel->setPixmap(pix.scaled(150,150,Qt::KeepAspectRatio));
      ui->debugLabel->setText("App starting...");
 
     /* Create file of registered users of the pwdSaver app, if it does not exist yet */
-    //QString appDir = QCoreApplication::applicationDirPath();
-    //QFile file(appDir + "/users.json");
+    QFile checkFile("users.json");
+    if(checkFile.exists())
+    {
+        // QMessageBox::information(this, "debug", "File exists");
+        //file was already created, no actions
+    }
+    else
+    {
+       //QMessageBox::information(this, "debug", "File does not exist");
 
+        if ( !checkFile.open(QIODevice::WriteOnly)) {
+            qDebug() << __FILE__ << __LINE__ << " checkFile failed " << endl;
+
+        }
+        checkFile.close();
+        qDebug() << __FILE__ << __LINE__ <<" : created file for login " << endl;
+    }
 
 }
 
@@ -36,7 +53,7 @@ void MainWindow::on_loginButton_clicked()
     QString appUsername = ui->userLineEdit->text();
     QString appPassword = ui->passwLineEdit->text();
 
-    // here it is needed to compare username and password to thos that was
+    // here it is needed to compare username and password to those that was
     // registered earlier
     bool isLogOk = pUserProfiles->Login(appUsername, appPassword, this);
 
@@ -61,6 +78,9 @@ void MainWindow::on_regButton_clicked()
     /* Display message if registration was successful */
     if (isAdded) {
        QMessageBox::information(this, "User registration", "New user was registered");
+    }
+    else {
+    //   QMessageBox::information(this, "User registration", "Internal error");
     }
 }
 

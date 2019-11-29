@@ -33,6 +33,7 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
     QString appDir = QCoreApplication::applicationDirPath();
     QFile file(appDir + "/users.json");
 
+
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "addUserProfile: failed to open file" << endl;
         return false;
@@ -101,7 +102,7 @@ bool userProfiles::isUsernameExist(QString username)
     QFile file(appDir + "/users.json");
 
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "isUsernameExist: failed to open file" << endl;
+        qDebug() << __FILE__ << __LINE__ << "isUsernameExist: failed to open file" << endl;
         return false;
     }
 
@@ -125,7 +126,7 @@ bool userProfiles::isUsernameExist(QString username)
         jsVal = jsObj.value("username");
         if ( jsVal.toString() == username)
         {
-            qDebug() << "current user was previously registered!" << endl;
+            qDebug() << __FILE__ <<__LINE__ << ": current user was previously registered!" << endl;
             /* If we here then current user was previously registered! */
             return true;
         }
@@ -145,10 +146,11 @@ bool userProfiles::isPswdExist(QString pswd)
     QFile file(appDir + "/users.json");
 
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "isPswdExist: failed to open file" << endl;
+        qDebug() << __FILE__ << __LINE__ << "isPswdExist: failed to open file" << endl;
         return false;
     }
 
+    /* read file contant to a string */
     QString strFile = file.readAll();
     QJsonDocument jsReadDoc;
     jsReadDoc = QJsonDocument::fromJson(strFile.toUtf8());
@@ -166,7 +168,8 @@ bool userProfiles::isPswdExist(QString pswd)
        if ( jsObj.contains("password"))
        {
         qDebug() << "[" << i << "]" << "Ok!" << endl;
-        jsVal = jsObj.value("username");
+        jsVal = jsObj.value("password");
+        //qDebug() << jsVal.toString() << ":" << pswd << endl;
         if ( jsVal.toString() == pswd)
         {
             qDebug() << "current pswd was previously registered!" << endl;
@@ -178,6 +181,7 @@ bool userProfiles::isPswdExist(QString pswd)
     }
 
     /* current password was not registered */
+    qDebug() << __FILE__ << __LINE__ << ": current password was not registered " << endl;
     return false;
 }
 
@@ -193,9 +197,12 @@ bool userProfiles::Login(QString username, QString pswd, QWidget *parent)
     isPswdOk = isPswdExist(pswd);
 
     if( isUsernameOk && isPswdOk ) {
+        //QMessageBox::information(this,"Login","Successful login!");
+        qDebug() << __FILE__ << __LINE__ << " Successful login!" << endl;
        return true;
     }
     else {
+        qDebug() << __FILE__ << __LINE__ << " Login failed!" << endl;
         return false;
     }
 
