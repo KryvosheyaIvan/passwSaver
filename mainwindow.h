@@ -31,7 +31,7 @@ private:
     Ui::MainWindow *ui;
     userProfiles *pUserProfiles;
     QFile *fileUsers;
-    passw *pPassw;
+    passw *pPassw;                                 //new windows with passwords
 };
 
 
