@@ -30,7 +30,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     userProfiles *pUserProfiles;
-    QFile *fileUsers;
+    //QFile *fileUsers;
     passw *pPassw;                                 //new windows with passwords
 };
 

@@ -2,6 +2,7 @@
 #define CREATEPASSW_H
 
 #include <QDialog>
+#include <QFile>
 
 namespace Ui {
 class createPassw;
@@ -17,6 +18,7 @@ public:
 
 private:
     Ui::createPassw *ui;
+    QFile *fileMain;
 };
 
 #endif // CREATEPASSW_H
