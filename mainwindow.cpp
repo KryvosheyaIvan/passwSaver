@@ -61,7 +61,7 @@ void MainWindow::on_loginButton_clicked(void)
         //QMessageBox::information(this, "Login", "Username and password is correct");
 
         hide(); //hide main window
-        pPassw = new passw();
+        pPassw = new passw(this, appUsername); // call constructor with a Current user
         pPassw->show();
 
     }

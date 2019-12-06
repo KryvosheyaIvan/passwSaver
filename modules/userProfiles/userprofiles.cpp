@@ -216,12 +216,20 @@ bool userProfiles::Login(QString username, QString pswd, QWidget *parent)
 }
 
 /* add new resource and password */
-bool userProfiles::addLockKeyPair(QString username, QString lock, QString key, QString description, QWidget *parent)
+bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent)
 {
    /* Open file for R/W */
    QString appDir = QCoreApplication::applicationDirPath();
    QFile jsFile(appDir + "/users.json");
-   QJsonParseError jsonError;                                 //to check whether there is parse error
+   QJsonParseError jsonError;                                 //to check whether there is parse error  
+
+   /* Form filename for user database (from username) */
+   QString fileName = "/User_";
+   fileName.append(currUser);
+   fileName.append(".json");
+
+   /* Database */
+   QFile fileUserData(appDir + fileName);
 
    if( !jsFile.open(QIODevice::ReadWrite | QIODevice::Text) )
    {
@@ -252,6 +260,82 @@ bool userProfiles::addLockKeyPair(QString username, QString lock, QString key, Q
 
    // JSON format is OK...
 
+   /* If it is not array -> close */
+   if ( !jsDoc.isArray())
+   {
+       QMessageBox::critical(parent,"Adding Password to database", "InternalError");
+       qDebug() << __FILE__ << __LINE__ << ": addLockKeyPair: JSON is not array!" << endl;
+       return false;
+   }
+
+   //JSON is array...
+
+   /* Finding JSON object with current user in the database */
+   QJsonArray jsArray = jsDoc.array(); //get array
+
+   //temporary json structures
+   QJsonValue  jsValueTemp;
+   QJsonObject jsObjectTemp;
+   QJsonArray::iterator it;      //iterator
+   int i;
+   for( i = 0, it = jsArray.begin(); it != jsArray.end(); it++, i++)  //going through all elements of the array
+   {
+       jsValueTemp  = jsArray.at(i); //get current Value
+       jsObjectTemp = jsValueTemp.toObject();
+
+       if( jsObjectTemp.contains("username"))
+       {
+           jsValueTemp = jsObjectTemp.value("username"); //get username of current element
+
+           /* Check if this is profile of current User */
+           if( jsValueTemp.toString() == currUser)
+           {
+               /* Check whether database for current user exists */
+               if( fileUserData.exists())
+               {
+                   qDebug() << "is Data" << endl;
+                   return true;
+
+               }
+               else
+               {
+                   qDebug() << "There is no Data" << endl;
+                   QJsonArray dataArray;
+                   auto temp = QJsonObject(
+                   {
+                      qMakePair(QString("lock"),  QJsonValue(lock)),
+                      qMakePair(QString("key"),   QJsonValue(key)),
+                      qMakePair(QString("descr"), QJsonValue(description)),
+                   });
+                   dataArray.push_front(QJsonValue(temp));
+
+
+                   /*Open file for writing*/
+                   if( !fileUserData.open(QIODevice::WriteOnly) )
+                   {
+                       qDebug() << __FILE__ << __LINE__ << ": addLockKeyPair: failed to open file" << endl;
+                       return false;
+                   }
+                   /* Insert named array "Data"
+                    * "Data" = [  ... ]
+                   */
+                   jsObjectTemp["Data"] = dataArray;
+                   qDebug() << jsObjectTemp << endl;
+
+                   /* Create JsonDoc from final object and write it to file */
+                   QJsonDocument finalJsonDoc(jsObjectTemp);
+                   fileUserData.write(finalJsonDoc.toJson());
+                   fileUserData.close();
+               }
+           }
+       }
+   }//end of for
+
+
+
+
+   //QByteArray byteArray = jsDoc.toJson();
+   //qDebug() << "file: " << byteArray << endl;
 
    /* Password and resource successfully added */
    return true;

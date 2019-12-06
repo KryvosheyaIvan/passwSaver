@@ -10,11 +10,25 @@
 #include <QtCore>
 #include <QMenuBar>
 
+/* Default constructor */
 passw::passw(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::passw)
 {
     ui->setupUi(this);
+
+}
+
+/* Explicitly defined constructor with User input as a string*/
+passw::passw(QWidget *parent, QString user) :
+    QMainWindow(parent),
+    ui(new Ui::passw)
+{
+    ui->setupUi(this);
+
+    /* Set current username */
+    CurrentUser = user;
+
     /* Set title */
     setWindowTitle(tr("Password Saver"));
 
@@ -64,7 +78,7 @@ passw::passw(QWidget *parent) :
     //QTableWidgetItem tableItem = ui->tablePwd->takeItem(0,0);
     //tableItem = ui->tablePwd->itemFromIndex(indexTable);
 
-    newPassw = new createPassw;
+    newPassw = new createPassw(nullptr,CurrentUser);
     /* Slot --> Action */
     initActionsConnections();
 }
@@ -90,4 +104,5 @@ void passw::initActionsConnections()
 void passw::openCreatePasswWindow()
 {
   newPassw->exec();
+  //newPassw->hide();
 }

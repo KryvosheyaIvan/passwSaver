@@ -14,7 +14,7 @@ public:
 
     bool addUserProfile(QString username, QString pswd, QWidget *parent);                                   // registration
     bool Login(QString username, QString pswd, QWidget *parent);                                            // logging in
-    bool addLockKeyPair(QString username, QString lock, QString key, QString description, QWidget *parent); // add new resource and password
+    bool addLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent); // add new resource and password
     bool checkNewPassword(QString lock, QString key1, QString key2, QWidget *parent);                       // check new password and resource for correctness
 
 private:

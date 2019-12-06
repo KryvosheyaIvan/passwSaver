@@ -19,6 +19,7 @@ class passw : public QMainWindow
 
 public:
     explicit passw(QWidget *parent = 0);
+    explicit passw(QWidget *parent = 0, QString user="noUser");
     ~passw();
 
 private:
@@ -29,6 +30,7 @@ private slots:
     void openCreatePasswWindow();                                  // opening new window to save new password
 
 private:
+    QString CurrentUser;                          //current user
     Ui::passw *ui;
     QFile *filePasswords;
     createPassw* newPassw;
