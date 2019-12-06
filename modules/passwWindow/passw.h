@@ -6,6 +6,8 @@
 #include <QFile>
 #include "modules/createPassw/createpassw.h"
 
+//define class for compilation purposes
+class createPassw;
 
 namespace Ui {
 class passw;

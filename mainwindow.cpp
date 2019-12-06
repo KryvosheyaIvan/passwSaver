@@ -47,7 +47,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_loginButton_clicked()
+void MainWindow::on_loginButton_clicked(void)
 {
     /* Getting password and username when #login button is clicked */
     QString appUsername = ui->userLineEdit->text();
@@ -58,7 +58,7 @@ void MainWindow::on_loginButton_clicked()
     bool isLogOk = pUserProfiles->Login(appUsername, appPassword, this);
 
     if(isLogOk) {
-        QMessageBox::information(this, "Login", "Username and password is correct");
+        //QMessageBox::information(this, "Login", "Username and password is correct");
 
         hide(); //hide main window
         pPassw = new passw();

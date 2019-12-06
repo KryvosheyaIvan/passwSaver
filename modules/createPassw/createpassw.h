@@ -3,6 +3,11 @@
 
 #include <QDialog>
 #include <QFile>
+#include "modules/passwWindow/passw.h"
+#include "modules/userProfiles/userprofiles.h"
+
+//for compilation purposes
+class userProfiles;
 
 namespace Ui {
 class createPassw;
@@ -16,8 +21,12 @@ public:
     explicit createPassw(QWidget *parent = nullptr);
     ~createPassw();
 
+private slots:
+    void checkInputs(void);
+
 private:
     Ui::createPassw *ui;
+    userProfiles *pUserProfiles;
     QFile *fileMain;
 };
 

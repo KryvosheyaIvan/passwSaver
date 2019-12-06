@@ -83,7 +83,7 @@ void passw::on_linePwdSearch_textChanged(const QString &arg1)
 /* Slot --> Action */
 void passw::initActionsConnections()
 {
-   connect(ui->actionAdd, SIGNAL(triggered()), newPassw, SLOT(show()));
+   connect(ui->actionAdd, SIGNAL(triggered()), newPassw, SLOT(show()));  //new window with a form to create new lock-key pair
 }
 
 /* Open new window with New password Form*/
