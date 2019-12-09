@@ -1,6 +1,7 @@
 #include "createpassw.h"
 #include "ui_createpassw.h"
 #include <QMessageBox>
+#include <QDebug>
 #include "modules/userProfiles/userprofiles.h"
 
 /* Default constructor (must not be used)*/
@@ -11,10 +12,13 @@ createPassw::createPassw(QWidget *parent) :
 
 }
 
+/* Constructo, instance gets username */
 createPassw::createPassw(QWidget *parent, QString user) :
     QDialog(parent),
     ui(new Ui::createPassw)
 {
+    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Constructor" << endl;
+
     username = user; //init user
 
     /* Init GUI */
@@ -25,25 +29,24 @@ createPassw::createPassw(QWidget *parent, QString user) :
 
     /* Configure signal->slot */
     connect(ui->buttonOk,     SIGNAL(clicked()), this, SLOT(checkInputs()));
-    connect(ui->buttonCancel, SIGNAL(clicked()), this, SLOT(hide()));
+    connect(ui->buttonCancel, SIGNAL(clicked()), this, SLOT(cleanAndHide()));
 
-    //ui->lineResource->clear(); doesnt work
-    /* Write tips for user */
-    ui->lineResource->setPlaceholderText("Enter resource to save password from...");
-    ui->linePassw1->setPlaceholderText("Enter password here...");
-    ui->linePassw2->setPlaceholderText("Type password once again...");
-    ui->lineDescription->setPlaceholderText("Optionally, type descrition...");
+    /* Clean fields and Write tips for user */
+    clearFields();
+
 }
 
 createPassw::~createPassw()
 {
+    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Destructor" << endl;
+    parentWidget();
+
     delete ui;
 }
 
-
+/* When OK button is clicked */
 void createPassw::checkInputs(QWidget *parent)
 {
-   //QMessageBox::information(this, "debug", "button OK pressed!");
    /* Get all inputs from text labels */
    QString pwd1        = ui->linePassw1->text();
    QString pwd2        = ui->linePassw2->text();
@@ -61,7 +64,36 @@ void createPassw::checkInputs(QWidget *parent)
 
    if (isNewDataAdded)
    {
-      QMessageBox::information(parent,"New password", "New password added!");
+      QMessageBox::information(this,"New password", "New password added!");
+
+      /* Clean fields and Write tips for user */
+      clearFields();
+
+      hide();
    }
 
+}
+
+/* Clear text and hide windo */
+void createPassw::cleanAndHide(QWidget *parent)
+{
+   qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Clean" << endl;
+   clearFields();
+   hide();
+}
+
+/* Clears text fields and setting default grey helpful titles */
+void createPassw::clearFields(void)
+{
+    //Clearing fields
+   ui->lineResource->clear();
+   ui->linePassw1->clear();
+   ui->linePassw2->clear();
+   ui->lineDescription->clear();
+
+   // Write tips for user
+   ui->lineResource->setPlaceholderText("Enter resource to save password from...");
+   ui->linePassw1->setPlaceholderText("Enter password here...");
+   ui->linePassw2->setPlaceholderText("Type password once again...");
+   ui->lineDescription->setPlaceholderText("Optionally, type descrition...");
 }

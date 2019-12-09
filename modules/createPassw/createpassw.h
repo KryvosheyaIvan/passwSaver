@@ -19,11 +19,15 @@ class createPassw : public QDialog
 
 public:
     explicit createPassw(QWidget *parent = nullptr); //default constructor (not used)
-    explicit createPassw(QWidget *parent = nullptr, QString user = "noUser"); //
+    explicit createPassw(QWidget *parent = nullptr, QString user = "noUser"); //constructor getting username
     ~createPassw();
+
+    void clearFields(void); //clears text fields and setting default grey helpful titles
+
 
 private slots:
     void checkInputs(QWidget *parent = nullptr);
+    void cleanAndHide(QWidget *parent = nullptr);
 
 private:
     QString username;             //user for whom new password is created

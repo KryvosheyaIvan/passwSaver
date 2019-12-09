@@ -10,6 +10,8 @@
 #include <QtCore>
 #include <QMenuBar>
 
+#include "modules/createPassw/createpassw.h"
+
 /* Default constructor */
 passw::passw(QWidget *parent) :
     QMainWindow(parent),
@@ -78,13 +80,14 @@ passw::passw(QWidget *parent, QString user) :
     //QTableWidgetItem tableItem = ui->tablePwd->takeItem(0,0);
     //tableItem = ui->tablePwd->itemFromIndex(indexTable);
 
-    newPassw = new createPassw(nullptr,CurrentUser);
+    newPassw = new createPassw(this,CurrentUser);
     /* Slot --> Action */
     initActionsConnections();
 }
 
 passw::~passw()
 {
+    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Dead" << endl;
     delete ui;
 }
 
@@ -103,6 +106,10 @@ void passw::initActionsConnections()
 /* Open new window with New password Form*/
 void passw::openCreatePasswWindow()
 {
-  newPassw->exec();
-  //newPassw->hide();
+    //createPassw newStyle(this, CurrentUser);
+    //newStyle.setModal(true);
+    //newStyle.show();
+    //newPassw->exec();
+    newPassw->show();
+
 }
