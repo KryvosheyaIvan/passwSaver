@@ -493,6 +493,127 @@ bool userProfiles::checkNewPassword(QString lock, QString key1, QString key2, QW
 }
 
 
+QVector<QString> userProfiles::getResourceArray(QString strUsername,QWidget *parent)
+{
+    QVector<QString> vecResource;                                // return vector
+    QString strAppDir = QCoreApplication::applicationDirPath();  // application folder
+    QString strDataDir= (strAppDir+"/Database");                 // DB folder
+
+    QString strUsrPwdFile = "/User_";                            // Users password DB name
+    strUsrPwdFile.append(strUsername);                           //
+    strUsrPwdFile.append(".json");                               //
+
+    QJsonParseError jsonError;                                   //possible error type holder
+
+    QFile fileUsersPwdDB(strDataDir + strUsrPwdFile);            // File - DB for current user
+
+    // Open file of users passwords (if exists)
+    if( !QDir(strDataDir).exists() || !fileUsersPwdDB.exists())
+    {
+        //no directory or DBfile - no database
+
+        //return empty vector
+        vecResource.clear();
+        return vecResource;
+    }
+
+    // opening DB
+    if( !fileUsersPwdDB.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::critical(parent, "Loading database", "Internal error.");
+        return vecResource;
+    }
+
+    //file is opened...
+
+    //read file content into string
+    QJsonDocument jsDocRoot;
+    QString strFileContent = fileUsersPwdDB.readAll();
+    jsDocRoot = QJsonDocument::fromJson(strFileContent.toUtf8(), &jsonError);
+
+    //check for validity
+    if( jsDocRoot.isNull() || !jsDocRoot.isObject())
+    {
+        //form error message
+        QString errorType = jsonError.errorString();
+        QString userMessage = "Internal error. Corrupted JSON structure.\n Error type: ";
+        userMessage.append(errorType);
+        QMessageBox::critical(parent,"Adding Password to database", userMessage);
+        return vecResource;
+    }
+
+    //close file
+    fileUsersPwdDB.close();
+
+    //parse to object
+    QJsonObject jsObjRoot = jsDocRoot.object();
+
+    if(jsObjRoot.contains("Data"))
+    {
+        QJsonValue jsValTemp = jsObjRoot.value("Data");
+
+        //if array - continue
+        if( jsValTemp.isArray())
+        {
+            // get array Data and fill vector with actual values
+            QJsonArray jsArrData = jsValTemp.toArray();
+
+
+            QJsonValue jsValTemp;       // res + pwd + descr
+            QJsonObject jsObjTemp;      // res + pwd + descr
+            QJsonArray::iterator it;    // iterators
+            QString strTemp;
+            int i = 0;
+            for( it = jsArrData.begin(); it != jsArrData.end(); it++, i++)
+            {
+               jsValTemp = jsArrData.at(i);
+               if(jsValTemp.isObject())
+               {
+                  jsObjTemp = jsValTemp.toObject();
+
+                  //get lock(resource)
+                  if( jsObjTemp.contains("lock"))
+                  {
+                      jsValTemp = jsObjTemp.value("lock");
+                      strTemp = jsValTemp.toString();
+                      //push lock to return vector
+                      vecResource.push_back(strTemp);
+                  }
+               }
+            }
+        }
+        //else ret empty vector
+    }
+
+    //else...
+
+    //empty
+    return vecResource;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

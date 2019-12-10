@@ -17,6 +17,8 @@ public:
     bool addLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent); // add new resource and password
     bool checkNewPassword(QString lock, QString key1, QString key2, QWidget *parent);                       // check new password and resource for correctness
 
+    QVector<QString> getResourceArray(QString strUsername,QWidget *parent);
+
 private:
     bool isUsernameExist(QString username, QWidget *parent);
     bool isPswdExist(QString pswd, QWidget *parent);

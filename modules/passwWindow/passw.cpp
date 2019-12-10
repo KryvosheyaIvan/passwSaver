@@ -18,7 +18,6 @@ passw::passw(QWidget *parent) :
     ui(new Ui::passw)
 {
     ui->setupUi(this);
-
 }
 
 /* Explicitly defined constructor with User input as a string*/
@@ -64,6 +63,13 @@ passw::passw(QWidget *parent, QString user) :
     ui->tablePwd->horizontalHeader()->setStretchLastSection(true);
 
     ui->tablePwd->horizontalHeader()->resizeSection(0,5);
+
+    // getting resources array
+    this->Resource = pUserProfiles->getResourceArray(this->CurrentUser, this);
+
+    QVariant num = Resource.length();
+
+    QMessageBox::information(this,"Debug","Num " + num.toString());
 
     /* Try to set icon*/
     QPixmap pix(":/img/eye.png");

@@ -5,9 +5,12 @@
 //#include <QMenuBar>
 #include <QFile>
 #include "modules/createPassw/createpassw.h"
+#include "modules/userProfiles/userprofiles.h"
+
 
 //define class for compilation purposes
 class createPassw;
+class userProfiles;
 
 namespace Ui {
 class passw;
@@ -25,8 +28,12 @@ public:
 private:
     void initActionsConnections();
 
+    QVector<QString> Resource;
+    QVector<QString> Password;
+    QVector<QString> Description;
+
 private slots:
-    void on_linePwdSearch_textChanged(const QString &arg1);        //when someone enters text
+    void on_linePwdSearch_textChanged(const QString &arg1);        // when someone enters text
     void openCreatePasswWindow();                                  // opening new window to save new password
 
 private:
@@ -34,6 +41,7 @@ private:
     Ui::passw *ui;
     QFile *filePasswords;
     createPassw* newPassw;
+    userProfiles *pUserProfiles;                  // to get pwas of current users
 };
 
 #endif // PASSW_H
