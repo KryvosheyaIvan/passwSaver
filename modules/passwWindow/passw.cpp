@@ -106,10 +106,6 @@ void passw::initActionsConnections()
 /* Open new window with New password Form*/
 void passw::openCreatePasswWindow()
 {
-    //createPassw newStyle(this, CurrentUser);
-    //newStyle.setModal(true);
-    //newStyle.show();
     //newPassw->exec();
     newPassw->show();
-
 }

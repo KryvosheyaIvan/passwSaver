@@ -22,7 +22,7 @@ public:
 private slots:
     void on_loginButton_clicked(void);
 
-    void on_regButton_clicked();
+    void on_regButton_clicked(void);
 
     /* Eye button clicked */
     void on_toolButton_toggled(bool checked);
@@ -30,8 +30,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     userProfiles *pUserProfiles;
-    //QFile *fileUsers;
-    passw *pPassw;                                 //new windows with passwords
+    passw *pPassw;                                 //new window with passwords
 };
 
 

@@ -71,7 +71,7 @@ void MainWindow::on_loginButton_clicked(void)
     }
 }
 
-void MainWindow::on_regButton_clicked()
+void MainWindow::on_regButton_clicked(void)
 {
     bool isAdded = pUserProfiles->addUserProfile(ui->userLineEdit->text(),ui->passwLineEdit->text(), this);//, QJsonObject &jsonFile);
 

@@ -12,7 +12,7 @@ createPassw::createPassw(QWidget *parent) :
 
 }
 
-/* Constructo, instance gets username */
+/* Constructor, instance gets username */
 createPassw::createPassw(QWidget *parent, QString user) :
     QDialog(parent),
     ui(new Ui::createPassw)
@@ -74,7 +74,7 @@ void createPassw::checkInputs(QWidget *parent)
 
 }
 
-/* Clear text and hide windo */
+/* Clear text and hide window */
 void createPassw::cleanAndHide(QWidget *parent)
 {
    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Clean" << endl;

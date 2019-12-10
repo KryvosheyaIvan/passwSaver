@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QFile>
 
-#define MIN_STRING_LEN 4
+#define MIN_STRING_LEN 4             //min length for resource name and the password
 
 class userProfiles : public QObject
 {
