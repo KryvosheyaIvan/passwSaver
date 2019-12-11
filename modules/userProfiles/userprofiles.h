@@ -12,12 +12,21 @@ class userProfiles : public QObject
 public:
     explicit userProfiles(QObject *parent = 0);
 
+    /* Constants for getArrayElement()
+     * to choose what type of element must be returned
+     */
+    enum getTypeFlag {
+        RESOURCE    = 0x0000,
+        PASSWORD    = 0x0001,
+        DESCRIPTION = 0x0002
+    };
+
     bool addUserProfile(QString username, QString pswd, QWidget *parent);                                   // registration
     bool Login(QString username, QString pswd, QWidget *parent);                                            // logging in
     bool addLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent); // add new resource and password
     bool checkNewPassword(QString lock, QString key1, QString key2, QWidget *parent);                       // check new password and resource for correctness
 
-    QVector<QString> getResourceArray(QString strUsername,QWidget *parent);
+    QVector<QString> getArrayElement(QString strUsername, int elementType,QWidget *parent);                 // returns array of DB (one type)
 
 private:
     bool isUsernameExist(QString username, QWidget *parent);

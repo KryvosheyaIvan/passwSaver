@@ -2,11 +2,16 @@
 #define PASSW_H
 
 #include <QMainWindow>
-//#include <QMenuBar>
 #include <QFile>
 #include "modules/createPassw/createpassw.h"
 #include "modules/userProfiles/userprofiles.h"
 
+#define COLUMN_1 0
+#define COLUMN_2 1
+#define COLUMN_3 2
+#define COLUMN_4 3
+
+#define DELTA 2               //value to disable scrolling, when unnecessary in pwd table (height is ok, but scrolling is on bug)
 
 //define class for compilation purposes
 class createPassw;
@@ -27,6 +32,8 @@ public:
 
 private:
     void initActionsConnections();
+    int fillPwdTable(void);                                        // fill table of pwd,res, descr with data from users pwd .json file
+    QSize getPwdTableMinSize(void);                                // Calculates an appropriate size for tableWidget
 
     QVector<QString> Resource;
     QVector<QString> Password;

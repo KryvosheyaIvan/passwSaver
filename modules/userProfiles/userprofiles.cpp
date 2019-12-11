@@ -493,9 +493,29 @@ bool userProfiles::checkNewPassword(QString lock, QString key1, QString key2, QW
 }
 
 
-QVector<QString> userProfiles::getResourceArray(QString strUsername,QWidget *parent)
+QVector<QString> userProfiles::getArrayElement(QString strUsername, int elementType, QWidget *parent)
 {
-    QVector<QString> vecResource;                                // return vector
+    const QString strResource = "lock";
+    const QString strPwd      = "key";
+    const QString strDescr    = "descr";
+    QString strElemType;
+
+    switch (elementType) {
+       case userProfiles::PASSWORD:
+        strElemType = strPwd;
+        break;
+       case userProfiles::RESOURCE:
+        strElemType = strResource;
+        break;
+       case userProfiles::DESCRIPTION:
+        strElemType = strDescr;
+        break;
+    default:
+        break;
+    }
+
+
+    QVector<QString> vecElements;                             // return vector
     QString strAppDir = QCoreApplication::applicationDirPath();  // application folder
     QString strDataDir= (strAppDir+"/Database");                 // DB folder
 
@@ -513,15 +533,15 @@ QVector<QString> userProfiles::getResourceArray(QString strUsername,QWidget *par
         //no directory or DBfile - no database
 
         //return empty vector
-        vecResource.clear();
-        return vecResource;
+        vecElements.clear();
+        return vecElements;
     }
 
     // opening DB
     if( !fileUsersPwdDB.open(QIODevice::ReadOnly))
     {
         QMessageBox::critical(parent, "Loading database", "Internal error.");
-        return vecResource;
+        return vecElements;
     }
 
     //file is opened...
@@ -538,8 +558,8 @@ QVector<QString> userProfiles::getResourceArray(QString strUsername,QWidget *par
         QString errorType = jsonError.errorString();
         QString userMessage = "Internal error. Corrupted JSON structure.\n Error type: ";
         userMessage.append(errorType);
-        QMessageBox::critical(parent,"Adding Password to database", userMessage);
-        return vecResource;
+        QMessageBox::critical(parent,"Loading database", userMessage);
+        return vecElements;
     }
 
     //close file
@@ -572,12 +592,12 @@ QVector<QString> userProfiles::getResourceArray(QString strUsername,QWidget *par
                   jsObjTemp = jsValTemp.toObject();
 
                   //get lock(resource)
-                  if( jsObjTemp.contains("lock"))
+                  if( jsObjTemp.contains(strElemType))
                   {
-                      jsValTemp = jsObjTemp.value("lock");
+                      jsValTemp = jsObjTemp.value(strElemType);
                       strTemp = jsValTemp.toString();
                       //push lock to return vector
-                      vecResource.push_back(strTemp);
+                      vecElements.push_back(strTemp);
                   }
                }
             }
@@ -588,7 +608,7 @@ QVector<QString> userProfiles::getResourceArray(QString strUsername,QWidget *par
     //else...
 
     //empty
-    return vecResource;
+    return vecElements;
 }
 
 
