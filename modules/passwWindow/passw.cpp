@@ -9,6 +9,7 @@
 #include <QtGui>
 #include <QtCore>
 #include <QMenuBar>
+#include <QCheckBox>
 
 #include "modules/createPassw/createpassw.h"
 
@@ -50,20 +51,8 @@ passw::passw(QWidget *parent, QString user) :
     ui->linePwdSearch->setMaxLength(355);
     ui->linePwdSearch->setPlaceholderText("Enter resource here...");
 
+    //fill table of pwd,res, descr with data from users pwd .json file
     fillPwdTable();
-
-
-
-
-
-/*
-    QMessageBox::information(this,"Debug","NumRes: " + numRes.toString() + "\n" +
-                                          "NumPwd: " + numPwd.toString() + "\n" +
-                                          "NumDescr: " + numDescr.toString()
-                             );
-*/
-
-
 
     //ui->tablePwd->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
 
@@ -108,8 +97,9 @@ int passw::fillPwdTable(void)
     this->Password    = pUserProfiles->getArrayElement(this->CurrentUser, userProfiles::PASSWORD,    this);
     this->Description = pUserProfiles->getArrayElement(this->CurrentUser, userProfiles::DESCRIPTION, this);
 
+    //qVariant just for fun
     QVariant numRes   = this->Resource.length();
-    int numPwd   = this->Password.length();
+    QVariant numPwd   = this->Password.length();
     QVariant numDescr = this->Description.length();
 
     /* Try to create table */
@@ -156,16 +146,23 @@ int passw::fillPwdTable(void)
     //Resizes main window according to table dimensions *
     this->resizeMainWindow(sizeTablePwd);
 
-    /* Try to set icon*/
-    /*
-    QPixmap pix(":/img/eye.png");
-    QIcon iconExample(pix.scaled(20,20,Qt::KeepAspectRatio));
-    QTableWidgetItem *tableItem = new QTableWidgetItem;
-    tableItem->setIcon(iconExample);
-    tableItem->setTextAlignment(Qt::AlignCenter);
-    //ui->tablePwd->item(0,0)->setTextAlignment(Qt::AlignRight);
-    ui->tablePwd->setItem(0,0,tableItem);
+
+    /* Setting icon working example
+    QWidget *pWidget = new QWidget();
+    QString iconSrc = ":/img/option.png";
+    QSize sizeIcon(32,32);
+    QLabel *label = new QLabel;
+    label->setMaximumSize(sizeIcon);
+    label->setScaledContents(true);
+    label->setPixmap(QPixmap(iconSrc));
+    QHBoxLayout *pLayout = new QHBoxLayout(pWidget);
+    pLayout->addWidget(label);
+    pLayout->setAlignment(Qt::AlignCenter);
+    pLayout->setContentsMargins(0,0,0,0);
+    pWidget->setLayout(pLayout);
+    ui->tablePwd->setCellWidget(0,0,pWidget);
     */
+
     return 0;
 }
 

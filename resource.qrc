@@ -6,5 +6,7 @@
         <file>img/eye_crossed.png</file>
         <file>img/add.png</file>
         <file>img/delete.png</file>
+        <file>img/option.png</file>
+        <file>img/reload.png</file>
     </qresource>
 </RCC>

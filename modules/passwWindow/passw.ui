@@ -116,6 +116,8 @@
    </attribute>
    <addaction name="actionAdd"/>
    <addaction name="actionDelete"/>
+   <addaction name="actionReload"/>
+   <addaction name="actionConfigure"/>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -147,6 +149,9 @@
    <property name="text">
     <string>Add</string>
    </property>
+   <property name="toolTip">
+    <string>Add new password</string>
+   </property>
   </action>
   <action name="actionDelete">
    <property name="icon">
@@ -155,6 +160,33 @@
    </property>
    <property name="text">
     <string>Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete existing password</string>
+   </property>
+  </action>
+  <action name="actionReload">
+   <property name="icon">
+    <iconset resource="../../resource.qrc">
+     <normaloff>:/img/reload.png</normaloff>:/img/reload.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reload</string>
+   </property>
+   <property name="toolTip">
+    <string>Reload database</string>
+   </property>
+  </action>
+  <action name="actionConfigure">
+   <property name="icon">
+    <iconset resource="../../resource.qrc">
+     <normaloff>:/img/option.png</normaloff>:/img/option.png</iconset>
+   </property>
+   <property name="text">
+    <string>Options</string>
+   </property>
+   <property name="toolTip">
+    <string>Options</string>
    </property>
   </action>
  </widget>
