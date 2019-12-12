@@ -33,10 +33,10 @@ public:
     ~passw();
 
 private:
-    void initActionsConnections();
-    int fillPwdTable(void);                                        // fill table of pwd,res, descr with data from users pwd .json file
+    void  initActionsConnections();
+    int   fillPwdTable(void);                                        // fill table of pwd,res, descr with data from users pwd .json file
     QSize getPwdTableMinSize(void);                                // Calculates an appropriate size for tableWidget
-    void resizeMainWindow(QSize sizeTable);                        // Resizes main window according to table dimensions
+    void  resizeMainWindow(QSize sizeTable);                        // Resizes main window according to table dimensions
 
     QVector<QString> Resource;
     QVector<QString> Password;
