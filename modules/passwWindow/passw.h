@@ -11,7 +11,9 @@
 #define COLUMN_3 2
 #define COLUMN_4 3
 
-#define DELTA 2               //value to disable scrolling, when unnecessary in pwd table (height is ok, but scrolling is on bug)
+#define DELTA 2                 //value to disable scrolling, when unnecessary in pwd table (height is ok, but scrolling is on bug)
+
+#define MAX_VISIBLE_ROWS_NUM 15 //maximum visible rows of resources without scrolling
 
 //define class for compilation purposes
 class createPassw;
@@ -34,6 +36,7 @@ private:
     void initActionsConnections();
     int fillPwdTable(void);                                        // fill table of pwd,res, descr with data from users pwd .json file
     QSize getPwdTableMinSize(void);                                // Calculates an appropriate size for tableWidget
+    void resizeMainWindow(QSize sizeTable);                        // Resizes main window according to table dimensions
 
     QVector<QString> Resource;
     QVector<QString> Password;

@@ -77,7 +77,7 @@ passw::passw(QWidget *parent, QString user) :
 
 passw::~passw()
 {
-    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Dead" << endl;
+    //qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Dead" << endl;
     delete ui;
 }
 
@@ -117,8 +117,6 @@ int passw::fillPwdTable(void)
     ui->tablePwd->setColumnCount(4);
     ui->tablePwd->setHorizontalHeaderLabels(QStringList() << "Icon" <<"Lock" << "Key" << "Description" );
 
-    //ui->tablePwd->horizontalHeader()->setMinimumSectionSize(10);
-
     ui->tablePwd->horizontalHeader()->setSectionResizeMode(COLUMN_1,QHeaderView::Fixed);
     ui->tablePwd->horizontalHeader()->setSectionResizeMode(COLUMN_2,QHeaderView::Stretch);
     ui->tablePwd->horizontalHeader()->setSectionResizeMode(COLUMN_3,QHeaderView::Stretch);
@@ -143,10 +141,20 @@ int passw::fillPwdTable(void)
         ui->tablePwd->setItem(row,COLUMN_4,itemDsc);
     }
 
+    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "max height before" + QString::number(ui->tablePwd->maximumHeight()) << endl;
+    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "height before" + QString::number(ui->tablePwd->height()) << endl;
+
     /* Calculate and set appropriate size for tableWidget */
-    layout()->setSizeConstraint(QLayout::SetMinimumSize);
-    QSize size = this->getPwdTableMinSize();
-    ui->tablePwd->setMaximumSize(size);
+    layout()->setSizeConstraint(QLayout::SetMinimumSize); //not sure if its helpful
+    QSize sizeTablePwd = this->getPwdTableMinSize();
+    ui->tablePwd->setMaximumSize(sizeTablePwd);
+    ui->tablePwd->updateGeometry();
+
+    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "max height after" + QString::number(ui->tablePwd->maximumHeight()) << endl;
+    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "height after" + QString::number(ui->tablePwd->height()) << endl;
+
+    //Resizes main window according to table dimensions *
+    this->resizeMainWindow(sizeTablePwd);
 
     /* Try to set icon*/
     /*
@@ -161,26 +169,63 @@ int passw::fillPwdTable(void)
     return 0;
 }
 
-/* Calculates an appropriate size for tableWidget */
+/* Calculates an appropriate size for tableWidget
+*
+* brief: function gets current number of rows and gets bigger (vertically)
+* according to it,
+* but, if rows >= MAX_VISIBLE_ROWS_NUM,then
+* scrollBar is appeared and height remains so,
+* that only MAX_VISIBLE_ROWS_NU fits there
+*/
 QSize passw::getPwdTableMinSize(void)
 {
    int width = ui->tablePwd->verticalHeader()->width() + DELTA;
    int height;
 
+   //width is not important...
    for (int i = 0; i < ui->tablePwd->columnCount(); i++)
    {
       width += ui->tablePwd->columnWidth(i); // seems to include gridline (on my machine)
    }
+
+   //get current height
    height = ui->tablePwd->horizontalHeader()->height() + DELTA;
 
-   for (int j = 0; j < ui->tablePwd->rowCount(); j++)
+   /* Limit height of the app window to MAX_VISIBLE_ROWS_NUM*/
+   if(ui->tablePwd->rowCount() < MAX_VISIBLE_ROWS_NUM)
    {
-      height += ui->tablePwd->rowHeight(j);
+     // enlarge height on 1 row size (increment)
+     for (int j = 0; j < ui->tablePwd->rowCount(); j++)
+     {
+        height += ui->tablePwd->rowHeight(j);
+     }
    }
+   else
+   {
+      // set height on MAX_VISIBLE_ROWS_NUM*height and show scroll bar
+      height += ui->tablePwd->rowHeight(0)*MAX_VISIBLE_ROWS_NUM;
+      ui->tablePwd->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+   }
+   //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "rows " + QString::number(ui->tablePwd->rowCount()) << endl;
+   //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "height " + QString::number(height) << endl;
+
    return QSize(width, height);
 }
 
+/* Resizes main window according to table dimensions */
+void passw::resizeMainWindow(QSize sizeTable)
+{
+   //get predefined value, in fact
+   int emptyTableHeight = this->minimumHeight();
 
+   //get current size
+   QSize appSize(this->width(), emptyTableHeight);
+
+   //add height
+   appSize.setHeight(emptyTableHeight + sizeTable.height());
+
+   this->resize(appSize);
+}
 
 
 

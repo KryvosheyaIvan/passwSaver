@@ -17,7 +17,7 @@ createPassw::createPassw(QWidget *parent, QString user) :
     QDialog(parent),
     ui(new Ui::createPassw)
 {
-    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Constructor" << endl;
+    //qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Constructor" << endl;
 
     username = user; //init user
 
@@ -38,7 +38,7 @@ createPassw::createPassw(QWidget *parent, QString user) :
 
 createPassw::~createPassw()
 {
-    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Destructor" << endl;
+    //qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Destructor" << endl;
     parentWidget();
 
     delete ui;
