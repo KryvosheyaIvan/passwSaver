@@ -386,7 +386,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    QJsonArray jsArray = jsValue.toArray();
 
                    //push new values into array
-                   jsArray.push_front(QJsonValue(temp));
+                   jsArray.push_back(QJsonValue(temp));
 
                    //remove old array and insert new one
                    jsRootObj.remove("Data");
@@ -412,7 +412,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    // no file with users DB...
 
                    // create file and write first lock and key pair...
-                   qDebug() << "There is no Data" << endl;
+                   //oldDeb qDebug() << "There is no Data" << endl;
 
                    /*Open file for writing*/
                    if( !fileUsersPwdDB.open(QIODevice::WriteOnly) )
