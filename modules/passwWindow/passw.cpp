@@ -79,19 +79,38 @@ void passw::on_linePwdSearch_textChanged(const QString &arg1)
 /* Slot --> Action */
 void passw::initActionsConnections()
 {
-   connect(ui->actionAdd, SIGNAL(triggered()), newPassw, SLOT(show()));  //new window with a form to create new lock-key pair
+   //connect(ui->actionAdd,    SIGNAL(triggered()),   newPassw, SLOT(show()));             // new window with a form to create new lock-key pair
+    connect(ui->actionAdd,    SIGNAL(triggered()),  this, SLOT(openCreatePasswWindow()));             // new window with a form to create new lock-key pair
+   connect(ui->actionReload, SIGNAL(triggered()),   this,     SLOT(updatePwdTable()));
 }
 
 /* Open new window with New password Form*/
 void passw::openCreatePasswWindow()
 {
-    //newPassw->exec();
-    newPassw->show();
+    newPassw->exec();
+    //newPassw->show();
+    this->updatePwdTable();
 }
 
 /* fill table of pwd,res, descr with data from users pwd .json file */
 int passw::fillPwdTable(void)
 {
+    /* Clearing vectors on update */
+    if ( !this->Resource.isEmpty())
+    {
+        this->Resource.clear();
+    }
+
+    if ( !this->Password.isEmpty())
+    {
+        this->Password.clear();
+    }
+
+    if ( !this->Password.isEmpty())
+    {
+        this->Password.clear();
+    }
+
     // getting resources array
     this->Resource    = pUserProfiles->getArrayElement(this->CurrentUser, userProfiles::RESOURCE,    this);
     this->Password    = pUserProfiles->getArrayElement(this->CurrentUser, userProfiles::PASSWORD,    this);
@@ -112,7 +131,7 @@ int passw::fillPwdTable(void)
     ui->tablePwd->horizontalHeader()->setSectionResizeMode(COLUMN_3,QHeaderView::Stretch);
     ui->tablePwd->horizontalHeader()->setStretchLastSection(true);
 
-    ui->tablePwd->horizontalHeader()->resizeSection(0,5);
+    //ui->tablePwd->horizontalHeader()->resizeSection(0,5);
 
     /* Set text values to appropriate table items */
     for(int row = 0; row < ui->tablePwd->rowCount(); row++)
@@ -130,9 +149,6 @@ int passw::fillPwdTable(void)
         itemDsc->setText(this->Description.value(row));
         ui->tablePwd->setItem(row,COLUMN_4,itemDsc);
     }
-
-    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "max height before" + QString::number(ui->tablePwd->maximumHeight()) << endl;
-    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "height before" + QString::number(ui->tablePwd->height()) << endl;
 
     /* Calculate and set appropriate size for tableWidget */
     layout()->setSizeConstraint(QLayout::SetMinimumSize); //not sure if its helpful
@@ -212,21 +228,34 @@ QSize passw::getPwdTableMinSize(void)
 /* Resizes main window according to table dimensions */
 void passw::resizeMainWindow(QSize sizeTable)
 {
-   //get predefined value, in fact
-   int emptyTableHeight = this->minimumHeight();
-
    //get current size
-   QSize appSize(this->width(), emptyTableHeight);
+   QSize appSize(this->width(), EMPTY_PWD_WIND_HEIGHT);
 
    //add height
-   appSize.setHeight(emptyTableHeight + sizeTable.height());
+   appSize.setHeight(EMPTY_PWD_WIND_HEIGHT + sizeTable.height());
 
    this->resize(appSize);
+
 }
 
+/* Refills passwords table */
+void passw::updatePwdTable(void)
+{
+   //Clear table
+    clearPwdTable();
 
+    //fill table of pwd,res, descr with data from users pwd .json file
+    fillPwdTable();
 
+    QMessageBox::information(this,"Database reload","Updated!");
+}
 
+/* clear table*/
+void passw::clearPwdTable(void)
+{
+    //clear all contents but leaves number of rows and columns and titles the same
+    ui->tablePwd->clearContents();
+}
 
 
 
