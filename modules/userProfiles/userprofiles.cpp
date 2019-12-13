@@ -35,7 +35,6 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
 
 
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "addUserProfile: failed to open file" << endl;
         return false;
     }
     QString strFile = file.readAll();
@@ -65,7 +64,6 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
     QJsonArray jsArray;
 
     if ( jsReadDoc.isArray()) {
-        qDebug() << "doc is array" << endl;
         jsArray = jsReadDoc.array();        // copying old array
     }
 
@@ -80,8 +78,6 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
 
     jsArray.append(jsValue);
 
-    //qDebug() << "freeing jsReadDoc" << endl;
-    //~jsReadDoc();
     jsReadDoc.setArray(jsArray);
 
 
@@ -130,14 +126,13 @@ bool userProfiles::isUsernameExist(QString username, QWidget *parent)
        jsObj = jsVal.toObject();
        if ( jsObj.contains("username"))
        {
-        //qDebug() << "[" << i << "]" << "Ok!" << endl;
-        jsVal = jsObj.value("username");
-        if ( jsVal.toString() == username)
-        {
-            qDebug() << __FILE__ <<__LINE__ << ": current user was previously registered!" << endl;
-            /* If we here then current user was previously registered! */
-            return true;
-        }
+         jsVal = jsObj.value("username");
+         if ( jsVal.toString() == username)
+         {
+             qDebug() << __FILE__ <<__LINE__ << ": current user was previously registered!" << endl;
+             /* If we here then current user was previously registered! */
+             return true;
+         }
        }
        i++;
     }
@@ -175,7 +170,6 @@ bool userProfiles::isPswdExist(QString pswd, QWidget *parent)
        jsObj = jsVal.toObject();
        if ( jsObj.contains("password"))
        {
-        qDebug() << "[" << i << "]" << "Ok!" << endl;
         jsVal = jsObj.value("password");
         //qDebug() << jsVal.toString() << ":" << pswd << endl;
         if ( jsVal.toString() == pswd)

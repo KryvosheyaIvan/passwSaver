@@ -24,21 +24,24 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        modules/createPassw/createpassw.cpp \
         main.cpp \
         mainwindow.cpp \
+        modules/deletePassw/deletepassw.cpp \
+        modules/createPassw/createpassw.cpp \
         modules/userProfiles/userprofiles.cpp \
         modules/passwWindow/passw.cpp
 
 HEADERS += \
-        modules/createPassw/createpassw.h \
         mainwindow.h \
+        modules/deletePassw/deletepassw.h \
+        modules/createPassw/createpassw.h \
         modules/userProfiles/userprofiles.h \
         modules/passwWindow/passw.h
 
 FORMS += \
-        modules/createPassw/createpassw.ui \
         mainwindow.ui \
+        modules/deletePassw/deletepassw.ui \
+        modules/createPassw/createpassw.ui \
         modules/passwWindow/passw.ui
 
 RC_ICONS = icon/keys.ico

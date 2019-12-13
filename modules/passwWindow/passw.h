@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QFile>
 #include "modules/createPassw/createpassw.h"
+#include "modules/deletePassw/deletepassw.h"
 #include "modules/userProfiles/userprofiles.h"
 
 #define COLUMN_1 0
@@ -16,8 +17,10 @@
 #define MAX_VISIBLE_ROWS_NUM  15    // maximum visible rows of resources without scrolling
 
 //define class for compilation purposes
-class createPassw;
-class userProfiles;
+class createPassw;    // form to add pwds
+class deletePassw;    // form to delete pwds
+class userProfiles;   // managing DB
+
 
 namespace Ui {
 class passw;
@@ -34,26 +37,28 @@ public:
 
 private:
     void  initActionsConnections();
-    int   fillPwdTable(void);                                        // fill table of pwd,res, descr with data from users pwd .json file
-    QSize getPwdTableMinSize(void);                                  // Calculates an appropriate size for tableWidget
-    void  resizeMainWindow(QSize sizeTable);                         // Resizes main window according to table dimensions
-
-
-    QVector<QString> Resource;
-    QVector<QString> Password;
-    QVector<QString> Description;
+    int   fillPwdTable(void);                                      // fill table of pwd,res, descr with data from users pwd .json file
+    QSize getPwdTableMinSize(void);                                // Calculates an appropriate size for tableWidget
+    void  resizeMainWindow(QSize sizeTable);                       // Resizes main window according to table dimensions
 
 private slots:
     void on_linePwdSearch_textChanged(const QString &arg1);        // when someone enters text
-    void openCreatePasswWindow();                                  // opening new window to save new password
+    void openCreatePasswWindow(void);                              // opening new window to save new password
+    void openDeletePasswWindow(void);                              // opening new window to choose some password to delete
     void updatePwdTable(void);                                     // Refills passwords table
     void clearPwdTable(void);                                      // clear table
 
 private:
-    QString CurrentUser;                          //current user
     Ui::passw *ui;
+
+    QString CurrentUser;                          //current user
     QFile *filePasswords;
-    createPassw* newPassw;
+    QVector<QString> Resource;
+    QVector<QString> Password;
+    QVector<QString> Description;
+
+    createPassw* newPassw;                        // class-form to add pwd
+    deletePassw* delPassw;                        // class-form to delete pwd
     userProfiles *pUserProfiles;                  // to get pwas of current users
 };
 

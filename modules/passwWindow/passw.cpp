@@ -12,6 +12,7 @@
 #include <QCheckBox>
 
 #include "modules/createPassw/createpassw.h"
+#include "modules/deletePassw/deletepassw.h"
 
 /* Default constructor */
 passw::passw(QWidget *parent) :
@@ -51,15 +52,13 @@ passw::passw(QWidget *parent, QString user) :
     ui->linePwdSearch->setMaxLength(355);
     ui->linePwdSearch->setPlaceholderText("Enter resource here...");
 
-    //fill table of pwd,res, descr with data from users pwd .json file
+    // fill table of pwd,res, descr with data from users pwd .json file
     fillPwdTable();
 
-    //ui->tablePwd->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
-
-    //QTableWidgetItem tableItem = ui->tablePwd->takeItem(0,0);
-    //tableItem = ui->tablePwd->itemFromIndex(indexTable);
-
+    // instanciate classes to add/remove data
     newPassw = new createPassw(this,CurrentUser);
+    //delPassw = new deletePassw(this, "lock");
+
     /* Slot --> Action */
     initActionsConnections();
 }
@@ -79,17 +78,33 @@ void passw::on_linePwdSearch_textChanged(const QString &arg1)
 /* Slot --> Action */
 void passw::initActionsConnections()
 {
-   //connect(ui->actionAdd,    SIGNAL(triggered()),   newPassw, SLOT(show()));             // new window with a form to create new lock-key pair
-    connect(ui->actionAdd,    SIGNAL(triggered()),  this, SLOT(openCreatePasswWindow()));             // new window with a form to create new lock-key pair
-   connect(ui->actionReload, SIGNAL(triggered()),   this,     SLOT(updatePwdTable()));
+   connect(ui->actionAdd,    SIGNAL(triggered()),  this, SLOT(openCreatePasswWindow()));             // new window with a form to create new lock-key pair
+   connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(openDeletePasswWindow()));             // new window with a form to delete some lock-key pair
+   connect(ui->actionReload, SIGNAL(triggered()),  this, SLOT(updatePwdTable()));
 }
 
 /* Open new window with New password Form*/
-void passw::openCreatePasswWindow()
+void passw::openCreatePasswWindow(void)
 {
+    // execute newPassw class (old main window doesnt work)
     newPassw->exec();
-    //newPassw->show();
+
+    //update table
     this->updatePwdTable();
+}
+
+/* Open new window with New password Form*/
+void passw::openDeletePasswWindow(void)
+{
+    delPassw = new deletePassw(this, this->CurrentUser , "lock");
+
+    delPassw->exec();
+
+    //update table
+    this->updatePwdTable();
+
+    // free resources
+    delete delPassw;
 }
 
 /* fill table of pwd,res, descr with data from users pwd .json file */
@@ -232,6 +247,7 @@ void passw::resizeMainWindow(QSize sizeTable)
    QSize appSize(this->width(), EMPTY_PWD_WIND_HEIGHT);
 
    //add height
+   this->setMaximumHeight(EMPTY_PWD_WIND_HEIGHT + sizeTable.height());
    appSize.setHeight(EMPTY_PWD_WIND_HEIGHT + sizeTable.height());
 
    this->resize(appSize);
