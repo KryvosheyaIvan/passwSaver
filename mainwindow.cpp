@@ -100,6 +100,7 @@ void MainWindow::on_toolButton_toggled(bool checked)
    }
 }
 
+/* Change language button */
 void MainWindow::on_langButton_clicked(void)
 {
     static unsigned char langConstNum = ENGLISH;
