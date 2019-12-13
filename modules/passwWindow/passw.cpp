@@ -57,7 +57,6 @@ passw::passw(QWidget *parent, QString user) :
 
     // instanciate classes to add/remove data
     newPassw = new createPassw(this,CurrentUser);
-    //delPassw = new deletePassw(this, "lock");
 
     /* Slot --> Action */
     initActionsConnections();

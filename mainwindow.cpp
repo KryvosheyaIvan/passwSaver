@@ -15,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    /* Set title */
     setWindowTitle(tr("Password Saver"));
 
     QPixmap pix(":/img/keysApp.png");
@@ -40,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug() << __FILE__ << __LINE__ <<" : created file for login " << endl;
     }
 
+    connect(ui->langButton, SIGNAL(triggered()), this, SLOT(on_langButton_clicked()) );
 }
 
 MainWindow::~MainWindow()
@@ -96,3 +99,44 @@ void MainWindow::on_toolButton_toggled(bool checked)
      ui->passwLineEdit->setEchoMode(QLineEdit::Normal);
    }
 }
+
+void MainWindow::on_langButton_clicked(void)
+{
+    static unsigned char langConstNum = ENGLISH;
+    QString strLangIconPath;
+
+    langConstNum++;
+
+    switch(langConstNum)
+    {
+       case ENGLISH:
+        strLangIconPath = ":/img/eng_round.png";
+        ui->langlabel->setText("Eng");
+        break;
+
+       case GERMAN:
+        strLangIconPath = ":/img/ger_round.png";
+        ui->langlabel->setText("Deu");
+        break;
+
+       case UKRAINIAN:
+        strLangIconPath = ":/img/ukr_round.png";
+        ui->langlabel->setText("Укр");
+        break;
+
+    default:
+        strLangIconPath = ":/img/eng_round.png";
+        ui->langlabel->setText("Eng");
+        langConstNum = ENGLISH;
+        break;
+    }
+
+
+   QPixmap LangPixmap(strLangIconPath);
+   QIcon langIcon(LangPixmap);
+   ui->langButton->setIcon(langIcon);
+}
+
+
+
+
