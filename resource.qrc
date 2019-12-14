@@ -11,5 +11,8 @@
         <file>img/eng_round.png</file>
         <file>img/ger_round.png</file>
         <file>img/ukr_round.png</file>
+        <file>translations/QtLanguage_Ukr.qm</file>
+        <file>translations/QtLanguage_Eng.qm</file>
+        <file>translations/QtLanguage_Ger.qm</file>
     </qresource>
 </RCC>

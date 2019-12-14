@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
+#include <QTranslator>
 
 #include <QDebug>
 #include <QMenuBar>
@@ -18,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /* Set title */
     setWindowTitle(tr("Password Saver"));
+
+    ui->userLabel->setText(tr("Username"));
 
     QPixmap pix(":/img/keysApp.png");
     ui->pictLabel->setPixmap(pix.scaled(150,150,Qt::KeepAspectRatio));
@@ -112,32 +115,58 @@ void MainWindow::on_langButton_clicked(void)
     {
        case ENGLISH:
         strLangIconPath = ":/img/eng_round.png";
+
+        // Load English
         ui->langlabel->setText("Eng");
+        translator.load(":/translations/QtLanguage_Eng.qm");
+        qApp->installTranslator(&translator);
         break;
 
        case GERMAN:
         strLangIconPath = ":/img/ger_round.png";
+
+        // Load German
         ui->langlabel->setText("Deu");
+        translator.load(":/translations/QtLanguage_Ger.qm");
+        qApp->installTranslator(&translator);
         break;
 
        case UKRAINIAN:
         strLangIconPath = ":/img/ukr_round.png";
+
+        // Load Ukrainian
         ui->langlabel->setText("Укр");
+        translator.load(":/translations/QtLanguage_Ukr.qm");
+        qApp->installTranslator(&translator);
+
+        //reset counter
+        langConstNum = 0;
         break;
 
     default:
-        strLangIconPath = ":/img/eng_round.png";
-        ui->langlabel->setText("Eng");
+        qDebug() << "must not be here" << endl;
+        //strLangIconPath = ":/img/eng_round.png";
+        //ui->langlabel->setText("Eng");
         langConstNum = ENGLISH;
         break;
     }
 
+  //qDebug() << QString::number(langConstNum) << endl;
 
+   // Set appropriate language abbr. and icon
    QPixmap LangPixmap(strLangIconPath);
    QIcon langIcon(LangPixmap);
    ui->langButton->setIcon(langIcon);
 }
 
-
+/* Chenge event interrupt */
+void MainWindow::changeEvent(QEvent* event)
+{
+    if (event->type() == QEvent::LanguageChange)
+    {
+        //qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "Retranslate" << endl;
+        ui->retranslateUi(this);
+    }
+}
 
 

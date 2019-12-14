@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QFile>
+#include <QTranslator>
+#include <QEvent>
 #include "modules/passwWindow/passw.h"
 
 class userProfiles;
@@ -28,19 +30,28 @@ public:
     } ;
 
 private slots:
+
+    /* Login button clicked */
     void on_loginButton_clicked(void);
 
+    /* Register button clicked */
     void on_regButton_clicked(void);
 
     /* Eye button clicked */
     void on_toolButton_toggled(bool checked);
 
+    /* Change button language clicked */
     void on_langButton_clicked(void);
+
+protected:
+    void changeEvent(QEvent* event) override;
 
 private:
     Ui::MainWindow *ui;
     userProfiles *pUserProfiles;
-    passw *pPassw;                                 //new window with passwords
+    passw *pPassw;                                 // new window with passwords
+
+    QTranslator translator;                        // to switch GUI between diff languages
 };
 
 
