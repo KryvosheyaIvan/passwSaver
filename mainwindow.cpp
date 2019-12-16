@@ -157,7 +157,7 @@ void MainWindow::on_langButton_clicked(void)
         break;
     }
 
-  //qDebug() << QString::number(langConstNum) << endl;
+  //qDebug() << QString::number(ui->userLineEdit->maxW) << endl;
 
    // Set appropriate language abbr. and icon
    QPixmap LangPixmap(strLangIconPath);
