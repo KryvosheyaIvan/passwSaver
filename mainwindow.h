@@ -26,7 +26,8 @@ public:
     {
         ENGLISH   = 0x01U,
         GERMAN    = 0x02U,
-        UKRAINIAN = 0x03U
+        UKRAINIAN = 0x03U,
+        RUSSIAN   = 0x04U
     } ;
 
 private slots:

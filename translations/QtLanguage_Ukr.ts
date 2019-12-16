@@ -15,7 +15,7 @@
     </message>
     <message>
         <location filename="../mainwindow.ui" line="62"/>
-        <location filename="../mainwindow.cpp" line="39"/>
+        <location filename="../mainwindow.cpp" line="23"/>
         <source>Username</source>
         <translation>Користувач</translation>
     </message>
@@ -66,7 +66,7 @@
         <translation>Закрити</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="37"/>
+        <location filename="../mainwindow.cpp" line="21"/>
         <source>Password Saver</source>
         <translation>Пам&apos;яталка</translation>
     </message>

@@ -138,6 +138,12 @@ void MainWindow::on_langButton_clicked(void)
         ui->langlabel->setText("Укр");
         translator.load(":/translations/QtLanguage_Ukr.qm");
         qApp->installTranslator(&translator);
+        break;
+
+    case RUSSIAN:
+        strLangIconPath = ":/img/rus_round.png";
+        translator.load(":/translations/QtLanguage_Rus.qm");
+        qApp->installTranslator(&translator);
 
         //reset counter
         langConstNum = 0;
