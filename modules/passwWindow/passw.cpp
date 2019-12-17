@@ -135,10 +135,11 @@ int passw::fillPwdTable(void)
     QVariant numPwd   = this->Password.length();
     QVariant numDescr = this->Description.length();
 
-    /* Try to create table */
+    /* Password table creation */
     ui->tablePwd->setRowCount(numRes.value<int>());
     ui->tablePwd->setColumnCount(4);
-    ui->tablePwd->setHorizontalHeaderLabels(QStringList() << "Icon" <<"Lock" << "Key" << "Description" );
+    ui->tablePwd->setHorizontalHeaderLabels(QStringList() << tr("Icon") << tr("Description") << tr("Login") << tr("Password") );
+
 
     ui->tablePwd->horizontalHeader()->setSectionResizeMode(COLUMN_1,QHeaderView::Fixed);
     ui->tablePwd->horizontalHeader()->setSectionResizeMode(COLUMN_2,QHeaderView::Stretch);
@@ -154,14 +155,14 @@ int passw::fillPwdTable(void)
         QTableWidgetItem* itemPwd = new QTableWidgetItem;
         QTableWidgetItem* itemDsc = new QTableWidgetItem;
 
+        itemDsc->setText(this->Description.value(row));
+        ui->tablePwd->setItem(row,COLUMN_2,itemDsc);
+
         itemRes->setText(this->Resource.value(row));
-        ui->tablePwd->setItem(row,COLUMN_2,itemRes);
+        ui->tablePwd->setItem(row,COLUMN_3,itemRes);
 
         itemPwd->setText(this->Password.value(row));
-        ui->tablePwd->setItem(row,COLUMN_3,itemPwd);
-
-        itemDsc->setText(this->Description.value(row));
-        ui->tablePwd->setItem(row,COLUMN_4,itemDsc);
+        ui->tablePwd->setItem(row,COLUMN_4,itemPwd);
     }
 
     /* Calculate and set appropriate size for tableWidget */

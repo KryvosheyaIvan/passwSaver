@@ -158,6 +158,8 @@
    <addaction name="actionDelete"/>
    <addaction name="actionReload"/>
    <addaction name="actionConfigure"/>
+   <addaction name="separator"/>
+   <addaction name="actionExit"/>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -227,6 +229,15 @@
    </property>
    <property name="toolTip">
     <string>Options</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset resource="../../resource.qrc">
+     <normaloff>:/img/exit.png</normaloff>:/img/exit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Exit</string>
    </property>
   </action>
  </widget>

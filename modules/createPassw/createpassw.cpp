@@ -55,7 +55,7 @@ void createPassw::checkInputs(QWidget *parent)
    QString currUser    = username;
 
    /* Check inputs for correctness */
-   bool isInputsOk = pUserProfiles->checkNewPassword(resource, pwd1, pwd2, this);
+   bool isInputsOk = pUserProfiles->checkNewPassword(currUser, description, resource, pwd1, pwd2, this);
 
    /* If inputs are wrong -> end execution */
    if( isInputsOk != true) return;

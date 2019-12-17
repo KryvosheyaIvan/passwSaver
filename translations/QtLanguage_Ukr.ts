@@ -14,54 +14,54 @@
         <translation>Вхід</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="62"/>
+        <location filename="../mainwindow.ui" line="68"/>
         <location filename="../mainwindow.cpp" line="23"/>
         <source>Username</source>
         <translation>Користувач</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="76"/>
+        <location filename="../mainwindow.ui" line="89"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="104"/>
-        <location filename="../mainwindow.ui" line="172"/>
+        <location filename="../mainwindow.ui" line="124"/>
+        <location filename="../mainwindow.ui" line="192"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="123"/>
+        <location filename="../mainwindow.ui" line="143"/>
         <source>Login</source>
         <translation>Вхід</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="130"/>
+        <location filename="../mainwindow.ui" line="150"/>
         <source>Register</source>
         <translation>Реєстрація</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="165"/>
+        <location filename="../mainwindow.ui" line="185"/>
         <source>Eng</source>
         <translation>Укр</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="212"/>
+        <location filename="../mainwindow.ui" line="232"/>
         <source>aboutQt</source>
         <translation>про Qt</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="217"/>
+        <location filename="../mainwindow.ui" line="237"/>
         <source>about</source>
         <translation>Про програму</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="222"/>
+        <location filename="../mainwindow.ui" line="242"/>
         <source>add service</source>
         <translation>add service</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="227"/>
+        <location filename="../mainwindow.ui" line="247"/>
         <source>close</source>
         <translation>Закрити</translation>
     </message>
@@ -184,6 +184,26 @@
         <location filename="../modules/passwWindow/passw.cpp" line="36"/>
         <source>Password Saver</source>
         <translation>Пам&apos;яталка</translation>
+    </message>
+    <message>
+        <location filename="../modules/passwWindow/passw.cpp" line="141"/>
+        <source>Icon</source>
+        <translation>Іконка</translation>
+    </message>
+    <message>
+        <location filename="../modules/passwWindow/passw.cpp" line="141"/>
+        <source>Description</source>
+        <translation>Опис</translation>
+    </message>
+    <message>
+        <location filename="../modules/passwWindow/passw.cpp" line="141"/>
+        <source>Login</source>
+        <translation>Логін</translation>
+    </message>
+    <message>
+        <location filename="../modules/passwWindow/passw.cpp" line="141"/>
+        <source>Password</source>
+        <translation>Пароль</translation>
     </message>
 </context>
 </TS>

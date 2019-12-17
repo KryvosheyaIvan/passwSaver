@@ -16,5 +16,6 @@
         <file>translations/QtLanguage_Ger.qm</file>
         <file>img/rus_round.png</file>
         <file>translations/QtLanguage_Rus.qm</file>
+        <file>img/exit.png</file>
     </qresource>
 </RCC>

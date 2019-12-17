@@ -7,6 +7,7 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QCoreApplication>
+#include <QVector>
 
 
 userProfiles::userProfiles(QObject *parent) : QObject(parent)
@@ -141,7 +142,7 @@ bool userProfiles::isUsernameExist(QString username, QWidget *parent)
     return false;
 }
 
-/* Method returns true if current passwords exists */
+/* Method returns true if current passwords exists in progam USERS profile */
 bool userProfiles::isPswdExist(QString pswd, QWidget *parent)
 {
     /* Open file for reading */
@@ -385,7 +386,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    //remove old array and insert new one
                    jsRootObj.remove("Data");
                    jsRootObj.insert("Data",QJsonValue(jsArray));
-                   qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << jsRootObj << endl;
+                   //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << jsRootObj << endl;
 
                    /* Open file for Writing (previous content is lost! */
                    if( !fileUsersPwdDB.open(QIODevice::WriteOnly) )
@@ -436,7 +437,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
 }
 
 /* validation of new password and resource for correctness */
-bool userProfiles::checkNewPassword(QString lock, QString key1, QString key2, QWidget *parent)
+bool userProfiles::checkNewPassword(QString currUser,QString descr, QString lock, QString key1, QString key2, QWidget *parent)
 {
     /* Check lock */
     if( lock.isEmpty())
@@ -482,18 +483,38 @@ bool userProfiles::checkNewPassword(QString lock, QString key1, QString key2, QW
         return false;
     }
 
+    /* New fields must be different from other existing field at least in 1 section!
+     * old description != new description OR
+     * old login       != new login OR
+     * old password    != new password
+     */
+
+    // store lines numbers of occurences of lock, key, descr of the DB into vector
+    QVector<int> loginMatches = getDataOccurences(currUser, RESOURCE,    lock,  nullptr);
+    QVector<int> pwdMatches   = getDataOccurences(currUser, PASSWORD,    key1,  nullptr);
+    QVector<int> descrMatches = getDataOccurences(currUser, DESCRIPTION, descr, nullptr);
+
+    bool isSameFields = isSameFieldsExist(descrMatches, loginMatches, pwdMatches, nullptr);
+    if( isSameFields)
+    {
+        QMessageBox::information(parent,"New password validation","There is already exacty the same password, login and description");
+        return false;
+    }
+
     /* All fields are Ok */
     return true;
 }
 
-
+/* returns array of DB (one type) according to elementType-->(getTypeFlag enum)  */
 QVector<QString> userProfiles::getArrayElement(QString strUsername, int elementType, QWidget *parent)
 {
     const QString strResource = "lock";
     const QString strPwd      = "key";
     const QString strDescr    = "descr";
-    QString strElemType;
 
+    QString strElemType;                        // holds string (1 of 3 upper)
+
+    // define input element tpe to return
     switch (elementType) {
        case userProfiles::PASSWORD:
         strElemType = strPwd;
@@ -509,7 +530,7 @@ QVector<QString> userProfiles::getArrayElement(QString strUsername, int elementT
     }
 
 
-    QVector<QString> vecElements;                             // return vector
+    QVector<QString> vecElements;                                // return vector
     QString strAppDir = QCoreApplication::applicationDirPath();  // application folder
     QString strDataDir= (strAppDir+"/Database");                 // DB folder
 
@@ -605,10 +626,125 @@ QVector<QString> userProfiles::getArrayElement(QString strUsername, int elementT
     return vecElements;
 }
 
+/* Stores lines numbers of occurences oflock || key || descr of the DB into vector
+ * brief: Function gets string of type (getTypeFlag enum)
+ * and loops through DB,
+ * if that string == to some string in DB,
+ * function ads the number (index) of its object into output vector.
+ *
+ * if "google" of type DESCRIPTION
+ * output: 2, 4, 6
+ * --> meaning that there is already "google"
+ * as a description for objects with indexes 2, 4 and 6
+ * in the database
+ */
+QVector<int> userProfiles::getDataOccurences(QString currUser,int elementType, QString strToCheck, QWidget *parent)
+{
+    QVector<int> vecLinesOccurence;
+
+    // vector of descriptions, passwords or logins depending on elementType
+    QVector<QString> tempData;
+
+    /* Open file for R/W */
+    QString appDir  = QCoreApplication::applicationDirPath();
+    QString dataDir = (appDir+"/Database");
+    //QJsonParseError jsonError;                                 //to check whether there is parse error
+
+    /* Form filename for user database (from username) */
+    QString fileName = "/User_";
+    fileName.append(currUser);
+    fileName.append(".json");
+
+    /* Database for current user*/
+    QFile fileUsersPwdDB(dataDir + fileName);
+
+    /* Check if folder "Database" exists,
+     * if no, then create
+     */
+    if( !QDir(dataDir).exists())
+    {
+        // no folder - no same data, return empty vector
+        return vecLinesOccurence;
+    }
+
+    switch(elementType)
+    {
+      case DESCRIPTION:
+       tempData = getArrayElement(currUser, userProfiles::DESCRIPTION, parent);
+      break;
+
+      case RESOURCE:
+       tempData = getArrayElement(currUser, userProfiles::RESOURCE, parent);
+      break;
+
+      case PASSWORD:
+       tempData = getArrayElement(currUser, userProfiles::PASSWORD, parent);
+      break;
+    }
+
+    QVector<QString>::iterator it;
+    int i = 0;
+    QString strData;
+    for( it = tempData.begin(); it != tempData.end(); it++, i++ )
+    {
+      strData = tempData.at(i);
+      if( strData == strToCheck)
+      {
+          vecLinesOccurence.push_back(i);
+      }
+    }
 
 
+    // return array
+    return vecLinesOccurence;
+}
 
+/* Function gets vectors of lines (3), where some string is repeated and checks, whether
+*  in all 3 vectors is the same line.
+*  If true --> there is exactly the same descr+pwd+login in the db
+*  If false --> new field is unique
+*/
+bool userProfiles::isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &loginIdxs, QVector<int> &pwdIdxs, QWidget *parent)
+{
+    //if at least 1 field is empty, the no occurences could be
+    if( descrIdxs.isEmpty() || loginIdxs.isEmpty() || pwdIdxs.isEmpty())
+    {
+        // at least one field is unique (no matter what exactly)
+        return false;
+    }
 
+    QVector<int>::iterator it_i, it_j, it_k;
+    int i = 0, j = 0, k = 0;
+
+    // going through all elements and compare one with each other
+    for( it_i = descrIdxs.begin(), i = 0; it_i != descrIdxs.end(); it_i++, i++ )
+    {
+      // get current description match line number
+      int descrLineNext = descrIdxs.at(i);
+
+      for( it_j = loginIdxs.begin(), j = 0; it_j != loginIdxs.end(); it_j++, j++ )
+      {
+          // get current login match line number
+          int loginLineNext = loginIdxs.at(j);
+
+          for( it_k = pwdIdxs.begin(), k = 0; it_k != pwdIdxs.end(); it_k++, k++ )
+          {
+              // get current password match line number
+             int pwdLineNext = pwdIdxs.at(k);
+
+             // compare
+             if( descrLineNext==loginLineNext && descrLineNext == pwdLineNext)
+             {
+                 //there is line exactly the same!
+                 return true;
+             }
+          }
+      }
+    }
+
+  // no identical occurences in the DB
+  return false;
+}
 
 
 
