@@ -91,6 +91,34 @@ void passw::initActionsConnections()
 
 void passw::deletePwdObject(void)
 {
+    QString keyToDelete;
+    QString lockToDelete;
+    QString descrToDelete;
+
+    QTableWidgetItem* itemDescrToDelete;
+    QTableWidgetItem* itemLockToDelete;
+    QTableWidgetItem* itemKeyToDelete;
+
+    int idxRowToDelete;
+
+    int i = 0;
+    for( i = 0; i < this->sCellClicked.row.size(); i++)
+    {
+       idxRowToDelete =  sCellClicked.row.at(i);
+
+       itemDescrToDelete = ui->tablePwd->item(idxRowToDelete, COLUMN_2);
+       descrToDelete = itemDescrToDelete->text();
+
+       itemLockToDelete = ui->tablePwd->item(idxRowToDelete, COLUMN_3);
+       lockToDelete = itemLockToDelete->text();
+
+       itemKeyToDelete = ui->tablePwd->item(idxRowToDelete, COLUMN_4);
+       keyToDelete = itemKeyToDelete->text();
+
+      // TO DO. Needed to get string of data to delete!
+      pUserProfiles->deleteLockKeyPair(this->CurrentUser, lockToDelete, keyToDelete, descrToDelete, nullptr);
+    }
+    updatePwdTable();
     //qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...SKA!" << endl;
   /*
     if (IS_ROW_ACTIVATED())

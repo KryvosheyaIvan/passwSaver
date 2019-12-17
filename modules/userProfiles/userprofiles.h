@@ -33,9 +33,14 @@ private:
     bool isUsernameExist(QString username, QWidget *parent);                                    // in Users file
     bool isPswdExist(QString pswd, QWidget *parent);                                            // in Users file
 
+    bool getPwdDB(QString moduleName, QString username, QString &fileContent, QWidget *parent);                    // opens password databse and copies its content into QString
+    bool rewritePwdDB(QString moduleName, QString username, QJsonDocument &jsDoc, QWidget *parent);                // opens password databse and copies its content into QString
+
+    bool isJSONvalid(QString strModule, QJsonDocument &jsDoc, QWidget *parent);
+
     QVector<int> getDataOccurences(QString currUser,int elementType,  QString strToCheck, QWidget *parent);            // store lines numbers of occurences of
                                                                                                                        // lock || key || descr of the DB into vector
-    bool isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &loginIdxs, QVector<int> &pwdIdxs, QWidget *parent);    // check whether current input object is unique (pwd DB)
+    bool isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &loginIdxs, QVector<int> &pwdIdxs, QWidget *parent); // check whether current input object is unique (pwd DB)
 
 signals:
 

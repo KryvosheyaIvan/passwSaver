@@ -746,15 +746,196 @@ bool userProfiles::isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &log
   return false;
 }
 
-bool deleteLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent)
+/* opens password databse and copies its content into QString fileContent
+ * or returns fail
+ */
+bool userProfiles::getPwdDB(QString moduleName, QString username, QString &fileContent, QWidget *parent)
 {
+    /* Open file for Reading */
+    QString appDir  = QCoreApplication::applicationDirPath();
+    QString dataDir = (appDir+"/Database");
+    //QJsonParseError jsonError;                                 //to check whether there is parse error
+
+    /* Form filename for user database (from username) */
+    QString fileName = "/User_";
+    fileName.append(username);
+    fileName.append(".json");
+
+    /* Database for current user*/
+    QFile fileUsersPwdDB(dataDir + fileName);
+
+    /* Check if folder "Database" exists,
+     */
+    if( !QDir(dataDir).exists())
+    {
+        // no folder - no DB
+        return false;
+    }
+
+    /* Open file with users list */
+    if( !fileUsersPwdDB.open(QIODevice::ReadOnly | QIODevice::Text) )
+    {
+        QMessageBox::critical(parent, tr("Getting database"), tr("Could not open database."));
+        return false;
+    }
+
+    // file was opened...
+
+    // copy content to reference
+    fileContent = fileUsersPwdDB.readAll(); // read file into string (users list)
+
+    // close file
+    fileUsersPwdDB.close();
+
+    /* Normal end of function */
     return true;
 }
 
+bool userProfiles::deleteLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent)
+{
+    bool isFounded = false;
+    const QString moduleName = "Deleting password.";
+
+    // PWD DB will be here
+    QString strPwdDB;
+
+    //get db content into strPwdDB
+    bool isGotPwdDB = this->getPwdDB(moduleName, currUser, strPwdDB, parent);
+    if ( !isGotPwdDB)
+    {
+        /* fail + info msg */
+        return false;
+    }
+
+    // convert String to jsDocument
+    QJsonDocument jsDoc = QJsonDocument::fromJson(strPwdDB.toUtf8());
+
+    /* Check json for validity */
+    bool isJsValid = isJSONvalid( moduleName, jsDoc, parent);
+    if ( !isJsValid)
+    {
+        /* fail + info msg */
+        return false;
+    }
+
+    if( jsDoc.isObject())
+    {
+        QJsonObject jsObjRoot = jsDoc.object();
+
+        if( jsObjRoot.contains("Data"))
+        {
+            QJsonValue  jsValueTemp  = jsObjRoot.value("Data");
+            QJsonObject jsObjectTemp;
+
+            if( jsValueTemp.isArray())
+            {
+               QJsonArray jsArrayData = jsValueTemp.toArray();
+
+               //here need to find appropriate field
+               QJsonArray::iterator it;
+               int i = 0;
+               for( i = 0, it = jsArrayData.begin(); it != jsArrayData.end(); it++, i++)  //going through all elements of the array
+               {
+                  jsValueTemp = jsArrayData.at(i);
+                  jsObjectTemp = jsValueTemp.toObject();
+
+                  if( jsObjectTemp.contains("key") && jsObjectTemp.contains("descr") &&  jsObjectTemp.contains("lock"))
+                  {
+                      QJsonValue jsValKey   = jsObjectTemp.value("key");
+                      QJsonValue jsValDescr = jsObjectTemp.value("descr");
+                      QJsonValue jsValLock  = jsObjectTemp.value("lock");
+
+                      QString strKey   = jsValKey.toString();
+                      QString strDescr = jsValDescr.toString();
+                      QString strLock  = jsValLock.toString();
+
+                      //check for equaity (identity) with input parameters
+                      if( strKey == key && strDescr == description && strLock == lock )
+                      {
+                          jsArrayData.removeAt(i);
+                          isFounded = true;
+                          break; // force quit for loop
+                      }
+                  }
+               }//end of for
+
+               if( isFounded)
+               {
+                   jsObjRoot.remove("Data");
+                   jsObjRoot.insert("Data", QJsonValue(jsArrayData));
+
+                   QJsonDocument jsDocNew(jsObjRoot);
+
+                   //write changes to DB file
+                   rewritePwdDB(moduleName, currUser, jsDocNew, parent);
+                   return true;
+               }
+            }
+        }
+    }
 
 
 
+    return false;
+}
 
+/* Check json for validity */
+bool userProfiles::isJSONvalid(QString strModule, QJsonDocument &jsDoc, QWidget *parent)
+{
+    /* Check json for validity */
+    if(jsDoc.isNull())
+    {
+        QMessageBox::critical(parent, strModule , tr("Internal error. Invalid JSON file."));
+        //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ <<"main file is not in JSON format!" << endl;
+        return false;
+    }
+    else
+    {
+        /* Normal end */
+        return true;
+    }
+}
+
+bool userProfiles::rewritePwdDB(QString moduleName, QString username, QJsonDocument &jsDoc, QWidget *parent)
+{
+    /* Open file for Writing */
+    QString appDir  = QCoreApplication::applicationDirPath();
+    QString dataDir = (appDir+"/Database");
+
+    /* Form filename for user database (from username) */
+    QString fileName = "/User_";
+    fileName.append(username);
+    fileName.append(".json");
+
+    /* Database for current user*/
+    QFile fileUsersPwdDB(dataDir + fileName);
+
+    /* Check if folder "Database" exists,
+     */
+    if( !QDir(dataDir).exists())
+    {
+        // no folder - no DB
+        return false;
+    }
+
+    /* Open file with users list */
+    if( !fileUsersPwdDB.open(QIODevice::WriteOnly | QIODevice::Text) )
+    {
+        QMessageBox::critical(parent, tr("Rewriting database"), tr("Could not open database."));
+        return false;
+    }
+
+    // file was opened...
+
+    fileUsersPwdDB.write(jsDoc.toJson());
+
+    // close file
+    fileUsersPwdDB.close();
+
+    /* Normal end of function */
+    return true;
+    return true;
+}
 
 
 
