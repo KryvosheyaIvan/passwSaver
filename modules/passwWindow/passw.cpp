@@ -14,7 +14,7 @@
 #include "modules/createPassw/createpassw.h"
 #include "modules/deletePassw/deletepassw.h"
 
-/* Default constructor */
+/* Default constructor. Not used */
 passw::passw(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::passw)
@@ -34,6 +34,9 @@ passw::passw(QWidget *parent, QString user) :
 
     /* Set title */
     setWindowTitle(tr("Password Saver"));
+
+    /* Set table cell activated nto default state */
+    DEACTIVATE_CELL();
 
     /* Tool Bar*/
     //QToolBar *fileToolBar = addToolBar(tr("File"));
@@ -78,8 +81,100 @@ void passw::on_linePwdSearch_textChanged(const QString &arg1)
 void passw::initActionsConnections()
 {
    connect(ui->actionAdd,    SIGNAL(triggered()),  this, SLOT(openCreatePasswWindow()));             // new window with a form to create new lock-key pair
-   connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(openDeletePasswWindow()));             // new window with a form to delete some lock-key pair
-   connect(ui->actionReload, SIGNAL(triggered()),  this, SLOT(updatePwdTable()));
+   //connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(openDeletePasswWindow()));             // new window with a form to delete some lock-key pair
+   connect(ui->actionReload, SIGNAL(triggered()),  this, SLOT(updatePwdTable()));                    // reload database
+   connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(deletePwdObject()));
+
+   //connect(ui->tablePwd,     SIGNAL(cellClicked(int,int)),  this,  SLOT(setCellActivated(int, int)));  // remember activated cell coordinates
+   connect(ui->tablePwd,     SIGNAL(itemSelectionChanged()), this, SLOT(onItemsSelectedChange()));
+}
+
+void passw::deletePwdObject(void)
+{
+    //qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...SKA!" << endl;
+  /*
+    if (IS_ROW_ACTIVATED())
+  {
+     QMessageBox::information(this,"Clicked","Clicked!deactivate...");
+     DEACTIVATE_CELL();
+  }
+  else
+  {
+    QMessageBox::information(this,"Clicked","Choose item to delete!");
+  }
+  */
+}
+
+/* Sets activated lines into sCellClicked structure  */
+void passw::onItemsSelectedChange(void)
+{
+
+  QList<QTableWidgetSelectionRange> listRanges = ui->tablePwd->selectedRanges();
+
+   qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "listRanges " << listRanges.size() << endl;
+
+   int k = 0;
+   for( k = 0; k < listRanges.size(); k++)
+   {
+
+      QTableWidgetSelectionRange range = listRanges.at(k);
+
+     // QTableWidgetSelectionRange range = listRanges.takeLast(); // first eq last
+
+      if( range.topRow() == range.bottomRow() )
+      {
+          // one row selected..
+
+          int singleRow = range.topRow();
+
+          //reset rows activated
+          if( listRanges.size() == 1 ) { DEACTIVATE_ROW(); }
+
+          //activate row
+          ACTIVATE_ROW(singleRow);
+
+          // set blue to single selected row (GUI)
+          // if selected at least 1 cell, all row will be blue
+          ui->tablePwd->setRangeSelected( QTableWidgetSelectionRange(singleRow, COLUMN_1, singleRow, COLUMN_4), true);
+      }
+      else // several rows selected...
+      {
+          // if 1 rows selecte
+          if( listRanges.size() == 1 ) { DEACTIVATE_ROW(); }
+
+          //add all selected rows into vector
+          int idx = 0;
+          int numRowsSelected = range.bottomRow() - range.topRow() + 1;
+          qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "numRowsSelected " << numRowsSelected << endl;
+          //if()
+          for( idx = range.topRow(); idx < (range.bottomRow() + 1) ; idx++)
+          {
+              ACTIVATE_ROW(idx);
+          }
+
+          // make several rows blue.
+          ui->tablePwd->setRangeSelected( QTableWidgetSelectionRange(range.topRow(), COLUMN_1, range.bottomRow(), COLUMN_4), true);
+      }
+   }
+   /*
+      qDebug() << "ROWS SELECTED ";
+      int j = 0;
+      for( j = 0; j < this->sCellClicked.row.size(); j++)
+      {
+        qDebug() <<  this->sCellClicked.row.at(j) ;
+      }
+  */
+
+}
+
+/* save clicked cell coordinates. Not used */
+void passw::setCellActivated(int row, int column)
+{
+  qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "setCellActivated()" << endl;
+
+  // save clicked cell coordinates
+  ACTIVATE_ROW(row);
+  ACTIVATE_COL(column);
 }
 
 /* Open new window with New password Form*/

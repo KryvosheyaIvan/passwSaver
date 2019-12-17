@@ -746,7 +746,10 @@ bool userProfiles::isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &log
   return false;
 }
 
-
+bool deleteLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent)
+{
+    return true;
+}
 
 
 
