@@ -30,6 +30,11 @@ public:
         RUSSIAN   = 0x04U
     } ;
 
+private:
+
+    /* Clears pwd and login */
+    void clearLabels(void);
+
 private slots:
 
     /* Login button clicked */

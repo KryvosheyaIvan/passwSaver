@@ -70,7 +70,7 @@ public:
     ~passw();
 
 private:
-    void  initActionsConnections();
+    void  initActionsConnections(QWidget *parent);
     int   fillPwdTable(void);                                      // fill table of pwd,res, descr with data from users pwd .json file
     QSize getPwdTableMinSize(void);                                // Calculates an appropriate size for tableWidget
     void  resizeMainWindow(QSize sizeTable);                       // Resizes main window according to table dimensions
@@ -79,6 +79,8 @@ private slots:
     void  on_linePwdSearch_textChanged(const QString &arg1);       // when someone enters text
     void  openCreatePasswWindow(void);                             // opening new window to save new password
     void  openDeletePasswWindow(void);                             // opening new window to choose some password to delete
+    void  goToSignIn(void);
+
     void  updatePwdTable(void);                                    // Refills passwords table
     void  clearPwdTable(void);                                     // clear table
 
@@ -88,6 +90,7 @@ private slots:
 
 private:
     Ui::passw *ui;
+    QWidget *signInWindow;
 
     struct cellActivated sCellClicked;            // holds coordinates of clicked cell
 

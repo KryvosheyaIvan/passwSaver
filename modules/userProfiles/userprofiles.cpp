@@ -30,7 +30,7 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
         return false;
     }
 
-    /* Open file for writing */
+    /* Open file for reading */
     QString appDir = QCoreApplication::applicationDirPath();
     QFile file(appDir + "/users.json");
 
@@ -83,7 +83,7 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
 
 
     if ( !file.open(QIODevice::WriteOnly)) {
-        qDebug() << "addUserProfile: failed to open file 2" << endl;
+        //qDebug() << __FUNCTION__ << __LINE__ << "failed to open file 2" << endl;
         return false;
     }
     file.write(jsReadDoc.toJson());
@@ -92,31 +92,26 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
     return true;
 }
 
+/* Checks whether such username was already registered*/
 bool userProfiles::isUsernameExist(QString username, QWidget *parent)
 {
-    /* Open file for reading */
-    QString appDir = QCoreApplication::applicationDirPath();
-    QFile file(appDir + "/users.json");
+    QString errReason;  // string will contain reason if smth is wrong
 
-    if ( !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << __FILE__ << __LINE__ << "isUsernameExist: failed to open file" << endl;
-        return false;
-    }
+    QJsonArray jsArray; // array of users registered
 
-    QString strFile = file.readAll();
-    QJsonDocument jsReadDoc;
-    jsReadDoc = QJsonDocument::fromJson(strFile.toUtf8());
-    file.close();
+    bool ifGotUsersReg = getJsUsersReg(errReason, jsArray, parent);
 
-    //Error checking
-    if(jsReadDoc.isNull())
+    if( !ifGotUsersReg)
     {
-        qDebug() << __FILE__ << __LINE__ << "isUsernameExist: failed to parse json" << endl;
-        QMessageBox::critical(parent, "Internal error", "Error parsing json");
+       QMessageBox::critical(parent, "Internal error", errReason);
+    }
+    else if( jsArray.isEmpty())
+    {
+        // ok. No such username
+        // Just empty users file
         return false;
     }
 
-    QJsonArray jsArray = jsReadDoc.array();
     QJsonValue jsVal;
     QJsonObject jsObj;
     QJsonArray::iterator it;
@@ -144,23 +139,24 @@ bool userProfiles::isUsernameExist(QString username, QWidget *parent)
 
 /* Method returns true if current passwords exists in progam USERS profile */
 bool userProfiles::isPswdExist(QString pswd, QWidget *parent)
-{
-    /* Open file for reading */
-    QString appDir = QCoreApplication::applicationDirPath();
-    QFile file(appDir + "/users.json");
+{    
+    QString errReason;  // string will contain reason if smth is wrong
 
-    if ( !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << __FILE__ << __LINE__ << "isPswdExist: failed to open file" << endl;
+    QJsonArray jsArray; // array of users registered
+
+    bool ifGotPwdsReg = getJsUsersReg(errReason, jsArray, parent);
+
+    if( !ifGotPwdsReg)
+    {
+       QMessageBox::critical(parent, "Internal error", errReason);
+    }
+    else if( jsArray.isEmpty())
+    {
+        // ok. No such pwd
+        // Just empty users file
         return false;
     }
 
-    /* read file contant to a string */
-    QString strFile = file.readAll();
-    QJsonDocument jsReadDoc;
-    jsReadDoc = QJsonDocument::fromJson(strFile.toUtf8());
-    file.close();
-
-    QJsonArray jsArray = jsReadDoc.array();
     QJsonValue jsVal;
     QJsonObject jsObj;
     QJsonArray::iterator it;
@@ -172,7 +168,7 @@ bool userProfiles::isPswdExist(QString pswd, QWidget *parent)
        if ( jsObj.contains("password"))
        {
         jsVal = jsObj.value("password");
-        //qDebug() << jsVal.toString() << ":" << pswd << endl;
+
         if ( jsVal.toString() == pswd)
         {
             qDebug() << "current pswd was previously registered!" << endl;
@@ -836,6 +832,7 @@ bool userProfiles::deleteLockKeyPair(QString currUser, QString lock, QString key
                int i = 0;
                for( i = 0, it = jsArrayData.begin(); it != jsArrayData.end(); it++, i++)  //going through all elements of the array
                {
+                  // some convertions to get strings of interest
                   jsValueTemp = jsArrayData.at(i);
                   jsObjectTemp = jsValueTemp.toObject();
 
@@ -852,29 +849,34 @@ bool userProfiles::deleteLockKeyPair(QString currUser, QString lock, QString key
                       //check for equaity (identity) with input parameters
                       if( strKey == key && strDescr == description && strLock == lock )
                       {
+                          // remove item from JsArray
                           jsArrayData.removeAt(i);
+
+                          // set Ok, to move to final stage
                           isFounded = true;
                           break; // force quit for loop
                       }
                   }
                }//end of for
 
+               // executed, if input parameters were in array
                if( isFounded)
                {
+                   // remove old array and insert new one without deleted items
                    jsObjRoot.remove("Data");
                    jsObjRoot.insert("Data", QJsonValue(jsArrayData));
 
                    QJsonDocument jsDocNew(jsObjRoot);
 
                    //write changes to DB file
-                   rewritePwdDB(moduleName, currUser, jsDocNew, parent);
-                   return true;
+                   bool isChangesSaved = rewritePwdDB(moduleName, currUser, jsDocNew, parent);
+
+                   /* Normal end of function */
+                   return isChangesSaved;
                }
             }
         }
     }
-
-
 
     return false;
 }
@@ -886,7 +888,6 @@ bool userProfiles::isJSONvalid(QString strModule, QJsonDocument &jsDoc, QWidget 
     if(jsDoc.isNull())
     {
         QMessageBox::critical(parent, strModule , tr("Internal error. Invalid JSON file."));
-        //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ <<"main file is not in JSON format!" << endl;
         return false;
     }
     else
@@ -927,6 +928,7 @@ bool userProfiles::rewritePwdDB(QString moduleName, QString username, QJsonDocum
 
     // file was opened...
 
+    // write data to file
     fileUsersPwdDB.write(jsDoc.toJson());
 
     // close file
@@ -934,18 +936,80 @@ bool userProfiles::rewritePwdDB(QString moduleName, QString username, QJsonDocum
 
     /* Normal end of function */
     return true;
-    return true;
 }
 
 
+bool userProfiles::getJsUsersReg(QString &errReason, QJsonArray &jsArray, QWidget *parent)
+{
+    QString fileContent;
 
+    /* Open file containing users of application for reading */
+    QString appDir = QCoreApplication::applicationDirPath();
+    QFile fileAppUsers(appDir + "/users.json");
 
+    if ( !fileAppUsers.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        errReason = "Failed to open file users.json .";
+        return false;
+    }
 
+    // read file into string
+    fileContent = fileAppUsers.readAll();
+    QJsonDocument jsReadDoc;
+    jsReadDoc = QJsonDocument::fromJson(fileContent.toUtf8());
 
+    fileAppUsers.close();
 
+    //Error checking
+    if(jsReadDoc.isNull())
+    {
+        errReason = "Invalid format of users.json . Error parsing.";
+        return false;
+    }
 
+    if(jsReadDoc.isArray())
+    {
+       jsArray = jsReadDoc.array();
 
+       /* Normal end of function */
+       return true;
+    }
+    else
+    {
+      errReason = "Invalid format of users.json .";
+      return false;
+    }
+}
 
+/*
+ * Function inits file containing
+ * registered users, if it does not exists
+ */
+void userProfiles::createUsersRegFile(void)
+{
+    QFile checkFile("users.json");
+
+    if(checkFile.exists())
+    {
+        // file exists..
+        return;
+    }
+    else
+    {
+        // file does not exist
+        if ( !checkFile.open(QIODevice::WriteOnly)) {
+        }
+
+        //init empty array
+        QJsonArray jsEmptyArray;
+        QJsonDocument jsEmptyDocument(jsEmptyArray);
+
+        //init file
+        checkFile.write(jsEmptyDocument.toJson());
+
+        //close file
+        checkFile.close();
+    }
+}
 
 
 

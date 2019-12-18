@@ -27,23 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     /* Create file of registered users of the pwdSaver app, if it does not exist yet */
-    QFile checkFile("users.json");
-    if(checkFile.exists())
-    {
-        // QMessageBox::information(this, "debug", "File exists");
-        //file was already created, no actions
-    }
-    else
-    {
-       //QMessageBox::information(this, "debug", "File does not exist");
-
-        if ( !checkFile.open(QIODevice::WriteOnly)) {
-            qDebug() << __FILE__ << __LINE__ << " checkFile failed " << endl;
-
-        }
-        checkFile.close();
-        qDebug() << __FILE__ << __LINE__ <<" : created file for login " << endl;
-    }
+    pUserProfiles->createUsersRegFile();
 
     connect(ui->langButton, SIGNAL(triggered()), this, SLOT(on_langButton_clicked()) );
 }
@@ -65,6 +49,8 @@ void MainWindow::on_loginButton_clicked(void)
 
     if(isLogOk) {
         //QMessageBox::information(this, "Login", "Username and password is correct");
+
+        clearLabels();
 
         hide(); //hide main window
         pPassw = new passw(this, appUsername); // call constructor with a Current user
@@ -173,6 +159,13 @@ void MainWindow::changeEvent(QEvent* event)
         //qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "Retranslate" << endl;
         ui->retranslateUi(this);
     }
+}
+
+/* Clears pwd and login */
+void MainWindow::clearLabels(void)
+{
+  ui->userLineEdit->clear();
+  ui->passwLineEdit->clear();
 }
 
 

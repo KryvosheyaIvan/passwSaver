@@ -29,6 +29,11 @@ passw::passw(QWidget *parent, QString user) :
 {
     ui->setupUi(this);
 
+    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "passw created" << endl;
+
+    /* Save pointer of the SignIn window to launch it, when necessary */
+    signInWindow = parent;
+
     /* Set current username */
     CurrentUser = user;
 
@@ -62,12 +67,12 @@ passw::passw(QWidget *parent, QString user) :
     newPassw = new createPassw(this,CurrentUser);
 
     /* Slot --> Action */
-    initActionsConnections();
+    initActionsConnections(parent);
 }
 
 passw::~passw()
 {
-    //qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Dead" << endl;
+    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "passw Destroyed" << endl;
     delete ui;
 }
 
@@ -78,15 +83,29 @@ void passw::on_linePwdSearch_textChanged(const QString &arg1)
 }
 
 /* Slot --> Action */
-void passw::initActionsConnections()
+void passw::initActionsConnections(QWidget *parent)
 {
    connect(ui->actionAdd,    SIGNAL(triggered()),  this, SLOT(openCreatePasswWindow()));             // new window with a form to create new lock-key pair
    //connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(openDeletePasswWindow()));             // new window with a form to delete some lock-key pair
    connect(ui->actionReload, SIGNAL(triggered()),  this, SLOT(updatePwdTable()));                    // reload database
    connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(deletePwdObject()));
+   //connect(ui->actionExit,   SIGNAL(triggered()),  parent, SLOT(show()));
+   connect(ui->actionExit,   SIGNAL(triggered()),  this, SLOT(goToSignIn()));
 
    //connect(ui->tablePwd,     SIGNAL(cellClicked(int,int)),  this,  SLOT(setCellActivated(int, int)));  // remember activated cell coordinates
    connect(ui->tablePwd,     SIGNAL(itemSelectionChanged()), this, SLOT(onItemsSelectedChange()));
+}
+
+void passw::goToSignIn(void)
+{
+  /*Show initial window*/
+  signInWindow->show();
+
+  /* Close current window */
+  this->close();
+
+  /* Free resources of this widget */
+  delete this;
 }
 
 void passw::deletePwdObject(void)
@@ -133,29 +152,30 @@ void passw::deletePwdObject(void)
   */
 }
 
-/* Sets activated lines into sCellClicked structure  */
+/* Sets activated lines into sCellClicked structure
+ * ( to delete them if needed)
+ */
 void passw::onItemsSelectedChange(void)
 {
 
   QList<QTableWidgetSelectionRange> listRanges = ui->tablePwd->selectedRanges();
 
-   qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "listRanges " << listRanges.size() << endl;
+   //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "listRanges " << listRanges.size() << endl;
 
    int k = 0;
    for( k = 0; k < listRanges.size(); k++)
    {
-
+      // get one range from the list of ranges
       QTableWidgetSelectionRange range = listRanges.at(k);
-
-     // QTableWidgetSelectionRange range = listRanges.takeLast(); // first eq last
 
       if( range.topRow() == range.bottomRow() )
       {
-          // one row selected..
+          // one row selected.. (by user)
 
           int singleRow = range.topRow();
 
-          //reset rows activated
+          // reset rows activated
+          // bu preventing (if 1 row - no change)
           if( listRanges.size() == 1 ) { DEACTIVATE_ROW(); }
 
           //activate row
@@ -165,16 +185,20 @@ void passw::onItemsSelectedChange(void)
           // if selected at least 1 cell, all row will be blue
           ui->tablePwd->setRangeSelected( QTableWidgetSelectionRange(singleRow, COLUMN_1, singleRow, COLUMN_4), true);
       }
-      else // several rows selected...
+      else // several rows selected... (by user)
       {
-          // if 1 rows selecte
+          // if user selected area without breaks
+          // ex. several rows, but 1 area (without ctrl + click)
           if( listRanges.size() == 1 ) { DEACTIVATE_ROW(); }
 
           //add all selected rows into vector
           int idx = 0;
-          int numRowsSelected = range.bottomRow() - range.topRow() + 1;
-          qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "numRowsSelected " << numRowsSelected << endl;
-          //if()
+
+          // display number of selected rows
+          //int numRowsSelected = range.bottomRow() - range.topRow() + 1;
+          //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "numRowsSelected " << numRowsSelected << endl;
+
+          // add every row to vector, going from top to bottom (increasing i)
           for( idx = range.topRow(); idx < (range.bottomRow() + 1) ; idx++)
           {
               ACTIVATE_ROW(idx);
@@ -184,7 +208,7 @@ void passw::onItemsSelectedChange(void)
           ui->tablePwd->setRangeSelected( QTableWidgetSelectionRange(range.topRow(), COLUMN_1, range.bottomRow(), COLUMN_4), true);
       }
    }
-   /*
+   /* Debug session, displaying indexes of all selected rows
       qDebug() << "ROWS SELECTED ";
       int j = 0;
       for( j = 0; j < this->sCellClicked.row.size(); j++)
