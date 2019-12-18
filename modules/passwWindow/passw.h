@@ -70,7 +70,7 @@ public:
     ~passw();
 
 private:
-    void  initActionsConnections(QWidget *parent);
+    void  initActionsConnections(void);
     int   fillPwdTable(void);                                      // fill table of pwd,res, descr with data from users pwd .json file
     QSize getPwdTableMinSize(void);                                // Calculates an appropriate size for tableWidget
     void  resizeMainWindow(QSize sizeTable);                       // Resizes main window according to table dimensions

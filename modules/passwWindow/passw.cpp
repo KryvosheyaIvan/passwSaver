@@ -67,7 +67,7 @@ passw::passw(QWidget *parent, QString user) :
     newPassw = new createPassw(this,CurrentUser);
 
     /* Slot --> Action */
-    initActionsConnections(parent);
+    initActionsConnections();
 }
 
 passw::~passw()
@@ -83,7 +83,7 @@ void passw::on_linePwdSearch_textChanged(const QString &arg1)
 }
 
 /* Slot --> Action */
-void passw::initActionsConnections(QWidget *parent)
+void passw::initActionsConnections(void)
 {
    connect(ui->actionAdd,    SIGNAL(triggered()),  this, SLOT(openCreatePasswWindow()));             // new window with a form to create new lock-key pair
    //connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(openDeletePasswWindow()));             // new window with a form to delete some lock-key pair
@@ -286,11 +286,13 @@ int passw::fillPwdTable(void)
     ui->tablePwd->setColumnCount(4);
     ui->tablePwd->setHorizontalHeaderLabels(QStringList() << tr("Icon") << tr("Description") << tr("Login") << tr("Password") );
 
-
     ui->tablePwd->horizontalHeader()->setSectionResizeMode(COLUMN_1,QHeaderView::Fixed);
     ui->tablePwd->horizontalHeader()->setSectionResizeMode(COLUMN_2,QHeaderView::Stretch);
     ui->tablePwd->horizontalHeader()->setSectionResizeMode(COLUMN_3,QHeaderView::Stretch);
     ui->tablePwd->horizontalHeader()->setStretchLastSection(true);
+
+    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "rowCount " + QString::number(ui->tablePwd->rowCount()) << endl; //ok
+    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "numRes " + QString::number(this->Resource.length()) << endl;    //ok
 
     //ui->tablePwd->horizontalHeader()->resizeSection(0,5);
 
@@ -314,7 +316,14 @@ int passw::fillPwdTable(void)
     /* Calculate and set appropriate size for tableWidget */
     layout()->setSizeConstraint(QLayout::SetMinimumSize); //not sure if its helpful
     QSize sizeTablePwd = this->getPwdTableMinSize();
+
+    // Set limits and update table
+    ui->tablePwd->setMinimumSize(sizeTablePwd);
     ui->tablePwd->setMaximumSize(sizeTablePwd);
+    ui->tablePwd->setMinimumHeight(sizeTablePwd.height());
+    ui->tablePwd->setMaximumHeight(sizeTablePwd.height());
+
+
     ui->tablePwd->updateGeometry();
 
     //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "max height after" + QString::number(ui->tablePwd->maximumHeight()) << endl;
@@ -365,6 +374,8 @@ QSize passw::getPwdTableMinSize(void)
    //get current height
    height = ui->tablePwd->horizontalHeader()->height() + DELTA;
 
+   //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "height start " + QString::number(height) << endl;
+
    /* Limit height of the app window to MAX_VISIBLE_ROWS_NUM*/
    if(ui->tablePwd->rowCount() < MAX_VISIBLE_ROWS_NUM)
    {
@@ -380,8 +391,9 @@ QSize passw::getPwdTableMinSize(void)
       height += ui->tablePwd->rowHeight(0)*MAX_VISIBLE_ROWS_NUM;
       ui->tablePwd->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
    }
+
    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "rows " + QString::number(ui->tablePwd->rowCount()) << endl;
-   //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "height " + QString::number(height) << endl;
+   //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "height end " + QString::number(height) << endl;
 
    return QSize(width, height);
 }

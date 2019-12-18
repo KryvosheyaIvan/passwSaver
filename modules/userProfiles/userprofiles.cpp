@@ -196,14 +196,12 @@ bool userProfiles::Login(QString username, QString pswd, QWidget *parent)
     if( isUsernameOk && isPswdOk ) {
         //QMessageBox::information(this,"Login","Successful login!");
         qDebug() << __FILE__ << __LINE__ << " Successful login!" << endl;
-       return true;
+        return true;
     }
     else {
         qDebug() << __FILE__ << __LINE__ << " Login failed!" << endl;
         return false;
     }
-
-    return false;
 }
 
 /* add new resource and password */
@@ -214,7 +212,6 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
    /* Open file for R/W */
    QString appDir  = QCoreApplication::applicationDirPath();
    QString dataDir = (appDir+"/Database");
-   QFile jsFileUsers(appDir + "/users.json");
    QJsonParseError jsonError;                                 //to check whether there is parse error  
 
    /* Form filename for user database (from username) */
@@ -480,7 +477,6 @@ QVector<QString> userProfiles::getArrayElement(QString strUsername, int elementT
         break;
     }
 
-
     QVector<QString> vecElements;                                // return vector
     QString strAppDir = QCoreApplication::applicationDirPath();  // application folder
     QString strDataDir= (strAppDir+"/Database");                 // DB folder
@@ -503,18 +499,17 @@ QVector<QString> userProfiles::getArrayElement(QString strUsername, int elementT
         return vecElements;
     }
 
-    // opening DB
-    if( !fileUsersPwdDB.open(QIODevice::ReadOnly))
+    //read file content into string
+    QJsonDocument jsDocRoot;
+    QString strFileContent;
+
+    bool isDBGot = getPwdDB("ska", strUsername, strFileContent, parent);
+    if( !isDBGot)
     {
         QMessageBox::critical(parent, "Loading database", "Internal error.");
         return vecElements;
     }
 
-    //file is opened...
-
-    //read file content into string
-    QJsonDocument jsDocRoot;
-    QString strFileContent = fileUsersPwdDB.readAll();
     jsDocRoot = QJsonDocument::fromJson(strFileContent.toUtf8(), &jsonError);
 
     //check for validity
@@ -527,9 +522,6 @@ QVector<QString> userProfiles::getArrayElement(QString strUsername, int elementT
         QMessageBox::critical(parent,"Loading database", userMessage);
         return vecElements;
     }
-
-    //close file
-    fileUsersPwdDB.close();
 
     //parse to object
     QJsonObject jsObjRoot = jsDocRoot.object();
@@ -599,15 +591,6 @@ QVector<int> userProfiles::getDataOccurences(QString currUser,int elementType, Q
     /* Open file for R/W */
     QString appDir  = QCoreApplication::applicationDirPath();
     QString dataDir = (appDir+"/Database");
-    //QJsonParseError jsonError;                                 //to check whether there is parse error
-
-    /* Form filename for user database (from username) */
-    QString fileName = "/User_";
-    fileName.append(currUser);
-    fileName.append(".json");
-
-    /* Database for current user*/
-    QFile fileUsersPwdDB(dataDir + fileName);
 
     /* Check if folder "Database" exists,
      * if no, then create
@@ -644,7 +627,6 @@ QVector<int> userProfiles::getDataOccurences(QString currUser,int elementType, Q
           vecLinesOccurence.push_back(i);
       }
     }
-
 
     // return array
     return vecLinesOccurence;
