@@ -36,6 +36,7 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
 
 
     if ( !file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "open " << endl;
         return false;
     }
     QString strFile = file.readAll();
@@ -83,7 +84,7 @@ bool userProfiles::addUserProfile(QString username, QString pswd, QWidget *paren
 
 
     if ( !file.open(QIODevice::WriteOnly)) {
-        //qDebug() << __FUNCTION__ << __LINE__ << "failed to open file 2" << endl;
+        qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "open " << endl;
         return false;
     }
     file.write(jsReadDoc.toJson());
@@ -231,7 +232,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
    QFile fileUsersPwdDB(dataDir + fileName);
 
    /* Finding JSON object with current user in the database */
-   QJsonArray jsArray; // = jsDoc.array(); //get array
+   QJsonArray jsArray;
 
 
    bool isUsersGot = getJsUsersReg(errorReason, jsArray, parent);
@@ -285,7 +286,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    QJsonDocument jsOldContent;
 
                    // read file into string (users data)
-                   QString strOldFile = fileUsersPwdDB.readAll();
+                   QString strOldFile;
 
                    //place file content into strOldFile
                    bool strDBGot = getPwdDB( "Add pwd", currUser, strOldFile, parent);
@@ -707,6 +708,7 @@ bool userProfiles::getPwdDB(QString moduleName, QString username, QString &fileC
     /* Open file with users list */
     if( !fileUsersPwdDB.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
+        qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "open " << endl;
         QMessageBox::critical(parent, tr("Getting database"), tr("Could not open database."));
         return false;
     }
@@ -858,6 +860,7 @@ bool userProfiles::rewritePwdDB(QString moduleName, QString username, QJsonDocum
     /* Open file with users list */
     if( !fileUsersPwdDB.open(QIODevice::WriteOnly | QIODevice::Text) )
     {
+        qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "open " << endl;
         QMessageBox::critical(parent, tr("Rewriting database"), tr("Could not open database."));
         return false;
     }
@@ -884,6 +887,7 @@ bool userProfiles::getJsUsersReg(QString &errReason, QJsonArray &jsArray, QWidge
     QFile fileAppUsers(appDir + "/users.json");
 
     if ( !fileAppUsers.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "open " << endl;
         errReason = "Failed to open file users.json .";
         return false;
     }
@@ -933,6 +937,8 @@ void userProfiles::createUsersRegFile(void)
     {
         // file does not exist
         if ( !checkFile.open(QIODevice::WriteOnly)) {
+            qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "open " << endl;
+            return;
         }
 
         //init empty array
