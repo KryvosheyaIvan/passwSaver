@@ -209,6 +209,8 @@ bool userProfiles::Login(QString username, QString pswd, QWidget *parent)
 /* add new resource and password */
 bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent)
 {
+    QString errorReason;
+
    /* Open file for R/W */
    QString appDir  = QCoreApplication::applicationDirPath();
    QString dataDir = (appDir+"/Database");
@@ -231,49 +233,17 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
    /* Database for current user*/
    QFile fileUsersPwdDB(dataDir + fileName);
 
-   /* Open file with users list */
-   if( !jsFileUsers.open(QIODevice::ReadWrite | QIODevice::Text) )
-   {
-       QMessageBox::critical(parent,"Adding Password to database", "Internal error.");
-       return false;
-   }
-
-   // file was opened...
-
-   QString strFileUsers = jsFileUsers.readAll(); // read file into string (users list)
-   QJsonDocument jsDoc;
-   jsDoc = QJsonDocument::fromJson(strFileUsers.toUtf8(), &jsonError); // try to recognize json-format
-
-   //close file (on hard drive)
-   jsFileUsers.close();
-
-   /* Check json for validity */
-   if(jsDoc.isNull())
-   {
-       /* Form error message */
-       QString errorType = jsonError.errorString();
-       QString userMessage = "Internal error. Invalid JSON file.\n Error type: ";
-       userMessage.append(errorType);
-
-       QMessageBox::critical(parent,"Adding Password to database", userMessage);
-       qDebug() << __FILE__ << __LINE__ << ": addLockKeyPair: main file is not in JSON format!" << endl;
-       return false;
-   }
-
-   // JSON format is OK...
-
-   /* If it is not array -> close */
-   if ( !jsDoc.isArray())
-   {
-       QMessageBox::critical(parent,"Adding Password to database", "InternalError.");
-       qDebug() << __FILE__ << __LINE__ << ": addLockKeyPair: JSON is not array!" << endl;
-       return false;
-   }
-
-   //JSON is array...
-
    /* Finding JSON object with current user in the database */
-   QJsonArray jsArray = jsDoc.array(); //get array
+   QJsonArray jsArray; // = jsDoc.array(); //get array
+
+
+   bool isUsersGot = getJsUsersReg(errorReason, jsArray, parent);
+
+   if ( !isUsersGot)
+   {
+       // return fail
+       return isUsersGot;
+   }
 
    //temporary json structures
    QJsonValue  jsValueTemp;
@@ -308,17 +278,6 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                /* Check whether database file for current user exists */
                if( fileUsersPwdDB.exists())
                {
-                   qDebug() << "is Data" << endl;
-
-                   /* Open file for Reading */
-                   if( !fileUsersPwdDB.open(QIODevice::ReadOnly) )
-                   {
-                       QMessageBox::critical(parent,"Adding Password to database", "Internal error.");
-                       return false;
-                   }
-
-                   //file is opened...
-
                    /*  parse and modify content of the file */
                    /*  Open file. Conver it to QJsonDocument->QJsonObject,
                     *  then get initial array, copy it to newly created array.
@@ -331,8 +290,15 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    // read file into string (users data)
                    QString strOldFile = fileUsersPwdDB.readAll();
 
-                   //close file
-                   fileUsersPwdDB.close();
+                   //place file content into strOldFile
+                   bool strDBGot = getPwdDB( "Add pwd", currUser, strOldFile, parent);
+
+                   if( !strDBGot)
+                   {
+                      qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "strDBGot=false" << endl;
+                      /* return fail */
+                      return strDBGot;
+                   }
 
                    // try to recognize json-format
                    jsOldContent = QJsonDocument::fromJson(strOldFile.toUtf8(), &jsonError);
@@ -382,36 +348,19 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    //remove old array and insert new one
                    jsRootObj.remove("Data");
                    jsRootObj.insert("Data",QJsonValue(jsArray));
-                   //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << jsRootObj << endl;
-
-                   /* Open file for Writing (previous content is lost! */
-                   if( !fileUsersPwdDB.open(QIODevice::WriteOnly) )
-                   {
-                       QMessageBox::critical(parent,"Adding Password to database", "Internal error.");
-                       return false;
-                   }
 
                    // write updates jsDoc into the file
                    QJsonDocument jsDocUpdated(jsRootObj);
-                   fileUsersPwdDB.write(jsDocUpdated.toJson());
-                   fileUsersPwdDB.close();
-                   return true;
 
+                   bool isWritten = rewritePwdDB("Add", currUser, jsDocUpdated, parent);
+
+                   /* Normal end of function */
+                   return isWritten;
                }
                else
                {
                    // no file with users DB...
 
-                   // create file and write first lock and key pair...
-                   //oldDeb qDebug() << "There is no Data" << endl;
-
-                   /*Open file for writing*/
-                   if( !fileUsersPwdDB.open(QIODevice::WriteOnly) )
-                   {
-                       qDebug() << __FILE__ << __LINE__ << ": addLockKeyPair: failed to open file" << endl;
-                       QMessageBox::critical(parent,"Adding Password to database", "Internal error.");
-                       return false;
-                   }
                    /* Insert named array "Data"
                     * "Data" = [  ... ]
                    */
@@ -420,8 +369,14 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    /* Create JsonDoc from final object and write it to file */
                    // jsDoc will contain info about user owning this file and pwd for app
                    QJsonDocument jsDocFinal(jsObjectTemp);
-                   fileUsersPwdDB.write(jsDocFinal.toJson());
-                   fileUsersPwdDB.close();
+
+                   bool isWritten = rewritePwdDB("Add", currUser, jsDocFinal, parent);
+
+                   if( !isWritten)
+                   {
+                       //return fail
+                       return isWritten;
+                   }
                }
            }
        }
@@ -750,7 +705,6 @@ bool userProfiles::getPwdDB(QString moduleName, QString username, QString &fileC
     /* Open file for Reading */
     QString appDir  = QCoreApplication::applicationDirPath();
     QString dataDir = (appDir+"/Database");
-    //QJsonParseError jsonError;                                 //to check whether there is parse error
 
     /* Form filename for user database (from username) */
     QString fileName = "/User_";
@@ -938,7 +892,7 @@ bool userProfiles::rewritePwdDB(QString moduleName, QString username, QJsonDocum
     return true;
 }
 
-
+/* Sets content of /users.json into jsArray*/
 bool userProfiles::getJsUsersReg(QString &errReason, QJsonArray &jsArray, QWidget *parent)
 {
     QString fileContent;

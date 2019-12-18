@@ -89,7 +89,6 @@ void passw::initActionsConnections(QWidget *parent)
    //connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(openDeletePasswWindow()));             // new window with a form to delete some lock-key pair
    connect(ui->actionReload, SIGNAL(triggered()),  this, SLOT(updatePwdTable()));                    // reload database
    connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(deletePwdObject()));
-   //connect(ui->actionExit,   SIGNAL(triggered()),  parent, SLOT(show()));
    connect(ui->actionExit,   SIGNAL(triggered()),  this, SLOT(goToSignIn()));
 
    //connect(ui->tablePwd,     SIGNAL(cellClicked(int,int)),  this,  SLOT(setCellActivated(int, int)));  // remember activated cell coordinates
