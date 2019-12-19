@@ -79,10 +79,10 @@ passw::~passw()
     delete ui;
 }
 
-/* Triggered when someone changes taxt inside label */
+/* Triggered when someone changes taxt inside label. Not used now. */
 void passw::on_linePwdSearch_textChanged(const QString &arg1)
 {
-   //debug QMessageBox::information(this,"ska","ska");
+   //debug QMessageBox::information(this,"Title","textChanged");
 }
 
 /* Slot --> Action */
@@ -178,7 +178,7 @@ void passw::saveCellEdited(QTableWidgetItem* pItemEdited)
 /* Deletes all selected rows in DB */
 void passw::deletePwdObject(void)
 {
-    QString errMsg = tr("Delete button clicked. \n");
+    QString errMsg = tr("Password deletion... \n");
 
     QString keyToDelete;
     QString lockToDelete;

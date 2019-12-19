@@ -43,15 +43,15 @@ private:
     bool isPswdExist(QString pswd, QWidget *parent);                                            // ...in Users file
 
     bool getPwdDB(QString username, QString &fileContent, QWidget *parent, QString &errMsg);                           // opens password databse and copies its content into QString
-    bool rewritePwdDB(QString moduleName, QString username, QJsonDocument &jsDoc, QWidget *parent);                    // opens password databse and copies jsDocumnet into DB file
+    bool rewritePwdDB(QString username, QJsonDocument &jsDoc, QString &errMsg);                                        // opens password databse and copies jsDocumnet into DB file
 
-    bool isJSONvalid(QString strModule, QJsonDocument &jsDoc, QWidget *parent);                                        // check json for validity
+    bool isJSONvalid(QJsonDocument &jsDoc, QString &errMsg);                                                           // check json for validity
 
     QVector<int> getDataOccurences(QString currUser,int elementType,  QString strToCheck, QWidget *parent, QString &errMsg);            // store lines numbers of occurences of
                                                                                                                        // lock || key || descr of the DB into vector
     bool isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &loginIdxs, QVector<int> &pwdIdxs, QWidget *parent); // check whether current input object is unique (pwd DB)
 
-    bool getJsUsersReg(QString &errReason, QJsonArray &jsArray, QWidget *parent);                                      // Sets content of /users.json into jsArray
+    bool getJsUsersReg(QString &errReason, QJsonArray &jsArray);                                                       // Sets content of /users.json into jsArray
 
 signals:
 

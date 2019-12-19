@@ -100,7 +100,7 @@ bool userProfiles::isUsernameExist(QString username, QWidget *parent)
 
     QJsonArray jsArray; // array of users registered
 
-    bool ifGotUsersReg = getJsUsersReg(errReason, jsArray, parent);
+    bool ifGotUsersReg = getJsUsersReg(errReason, jsArray);
 
     if( !ifGotUsersReg)
     {
@@ -145,7 +145,7 @@ bool userProfiles::isPswdExist(QString pswd, QWidget *parent)
 
     QJsonArray jsArray; // array of users registered
 
-    bool ifGotPwdsReg = getJsUsersReg(errReason, jsArray, parent);
+    bool ifGotPwdsReg = getJsUsersReg(errReason, jsArray);
 
     if( !ifGotPwdsReg)
     {
@@ -234,8 +234,8 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
    /* Finding JSON object with current user in the database */
    QJsonArray jsArray;
 
-
-   bool isUsersGot = getJsUsersReg(errorReason, jsArray, parent);
+   // get array of users of PasswordSaver
+   bool isUsersGot = getJsUsersReg(errorReason, jsArray);
 
    if ( !isUsersGot)
    {
@@ -294,7 +294,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    if( !strDBGot)
                    {
                       qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "strDBGot=false" << endl;
-                      /* return fail */
+                      /* return fail + errMsg*/
                       return strDBGot;
                    }
 
@@ -305,10 +305,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    if( jsOldContent.isNull() || !jsOldContent.isObject() )
                    {
                        //form error message
-                       QString errorType = jsonError.errorString();
-                       QString userMessage = "Internal error. Corrupted JSON structure.\n Error type: ";
-                       userMessage.append(errorType);
-                       QMessageBox::critical(parent,"Adding Password to database", userMessage);
+                       errMsg += tr("\n Internal error:\nCorrupted JSON format.");
                        return false;
                    }
 
@@ -318,10 +315,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    if( !jsRootObj.contains("Data"))
                    {
                        //form error message
-                       QString errorType = jsonError.errorString();
-                       QString userMessage = "Internal error. Corrupted JSON structure.\n Error type: ";
-                       userMessage.append(errorType);
-                       QMessageBox::critical(parent,"Adding Password to database", userMessage);
+                       errMsg += tr("\n Internal error:\nCorrupted JSON format.\nRoot object does not contain array \"Data\"");
                        return false;
                    }
 
@@ -331,10 +325,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    if( !jsValue.isArray())
                    {
                        //form error message
-                       QString errorType = jsonError.errorString();
-                       QString userMessage = "Internal error. Corrupted JSON structure.\n Error type: ";
-                       userMessage.append(errorType);
-                       QMessageBox::critical(parent,"Adding Password to database", userMessage);
+                       errMsg += tr("\n Internal error:\nCorrupted JSON format.\n\"Data\" is not array.");
                        return false;
                    }
 
@@ -350,7 +341,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    // write updates jsDoc into the file
                    QJsonDocument jsDocUpdated(jsRootObj);
 
-                   bool isWritten = rewritePwdDB("Add", currUser, jsDocUpdated, parent);
+                   bool isWritten = rewritePwdDB(currUser, jsDocUpdated, errMsg);
 
                    /* Normal end of function */
                    return isWritten;
@@ -358,6 +349,9 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                else
                {
                    // no file with users DB...
+
+                   // tracking error
+                    errMsg += tr("\n No database file.");
 
                    /* Insert named array "Data"
                     * "Data" = [  ... ]
@@ -368,7 +362,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    // jsDoc will contain info about user owning this file and pwd for app
                    QJsonDocument jsDocFinal(jsObjectTemp);
 
-                   bool isWritten = rewritePwdDB("Add", currUser, jsDocFinal, parent);
+                   bool isWritten = rewritePwdDB(currUser, jsDocFinal, errMsg);
 
                    if( !isWritten)
                    {
@@ -698,14 +692,14 @@ bool userProfiles::getPwdDB(QString username, QString &fileContent, QWidget *par
     if( !QDir(dataDir).exists())
     {
         // no folder - no DB
-        errMsg += tr("No folder of Database.");
+        errMsg += tr("\nNo folder of Database.");
         return false;
     }
 
     /* Open file with users list */
     if( !fileUsersPwdDB.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
-        errMsg += tr("Could not open Database file.");
+        errMsg += tr("\nCould not open Database file.");
         return false;
     }
 
@@ -721,10 +715,11 @@ bool userProfiles::getPwdDB(QString username, QString &fileContent, QWidget *par
     return true;
 }
 
+/* Deletes object drom DB */
 bool userProfiles::deleteLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent, QString &errMsg)
 {
+    //sets true if combination of lock, key and descr is in the DB
     bool isFounded = false;
-    const QString moduleName = "Deleting password.";
 
     // PWD DB will be here
     QString strPwdDB;
@@ -741,7 +736,7 @@ bool userProfiles::deleteLockKeyPair(QString currUser, QString lock, QString key
     QJsonDocument jsDoc = QJsonDocument::fromJson(strPwdDB.toUtf8());
 
     /* Check json for validity */
-    bool isJsValid = isJSONvalid( moduleName, jsDoc, parent);
+    bool isJsValid = isJSONvalid( jsDoc, errMsg);
     if ( !isJsValid)
     {
         /* fail + info msg */
@@ -803,7 +798,7 @@ bool userProfiles::deleteLockKeyPair(QString currUser, QString lock, QString key
                    QJsonDocument jsDocNew(jsObjRoot);
 
                    //write changes to DB file
-                   bool isChangesSaved = rewritePwdDB(moduleName, currUser, jsDocNew, parent);
+                   bool isChangesSaved = rewritePwdDB(currUser, jsDocNew, errMsg);
 
                    /* Normal end of function */
                    return isChangesSaved;
@@ -812,16 +807,26 @@ bool userProfiles::deleteLockKeyPair(QString currUser, QString lock, QString key
         }
     }
 
+    /* If we here --> fail */
+    if(!isFounded)
+    {
+      errMsg += tr("\n Could not delete password. No such field in the database.");
+    }
+    else
+    {
+      errMsg += tr("\n Error in inner JSON structure.");
+    }
     return false;
 }
 
 /* Check json for validity */
-bool userProfiles::isJSONvalid(QString strModule, QJsonDocument &jsDoc, QWidget *parent)
+bool userProfiles::isJSONvalid(QJsonDocument &jsDoc, QString &errMsg)
 {
     /* Check json for validity */
     if(jsDoc.isNull())
     {
-        QMessageBox::critical(parent, strModule , tr("Internal error. Invalid JSON file."));
+        // form error msg
+        errMsg += tr("Internal error. Invalid JSON file.\n");
         return false;
     }
     else
@@ -831,7 +836,8 @@ bool userProfiles::isJSONvalid(QString strModule, QJsonDocument &jsDoc, QWidget 
     }
 }
 
-bool userProfiles::rewritePwdDB(QString moduleName, QString username, QJsonDocument &jsDoc, QWidget *parent)
+/* Function gets qJsDocument and completely rewrites DB */
+bool userProfiles::rewritePwdDB(QString username, QJsonDocument &jsDoc, QString &errMsg)
 {
     /* Open file for Writing */
     QString appDir  = QCoreApplication::applicationDirPath();
@@ -850,14 +856,14 @@ bool userProfiles::rewritePwdDB(QString moduleName, QString username, QJsonDocum
     if( !QDir(dataDir).exists())
     {
         // no folder - no DB
+        errMsg += tr("\nWriting to DB...Error\nNo database folder.");
         return false;
     }
 
     /* Open file with users list */
     if( !fileUsersPwdDB.open(QIODevice::WriteOnly | QIODevice::Text) )
     {
-        qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "open " << endl;
-        QMessageBox::critical(parent, tr("Rewriting database"), tr("Could not open database."));
+        errMsg += tr("\nWriting to DB...Error\nCould not open database file.");
         return false;
     }
 
@@ -874,7 +880,7 @@ bool userProfiles::rewritePwdDB(QString moduleName, QString username, QJsonDocum
 }
 
 /* Sets content of /users.json into jsArray*/
-bool userProfiles::getJsUsersReg(QString &errReason, QJsonArray &jsArray, QWidget *parent)
+bool userProfiles::getJsUsersReg(QString &errReason, QJsonArray &jsArray)
 {
     QString fileContent;
 
@@ -1052,7 +1058,8 @@ bool userProfiles::replaceDBvalue(QString currUser, QString lock,   QString key,
                 //prepare document for writing
                 QJsonDocument jsDocEdited(jsObjRoot);
 
-                bool isWritten = rewritePwdDB("ska", currUser, jsDocEdited, parent);
+                // Rewrite DB
+                bool isWritten = rewritePwdDB(currUser, jsDocEdited, errMsg);
 
                 /* Normal end of operation */
                 return isWritten;
