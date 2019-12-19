@@ -44,10 +44,11 @@ FORMS += \
         modules/createPassw/createpassw.ui \
         modules/passwWindow/passw.ui
 
-TRANSLATIONS =  translations/QtLanguage_Ukr.ts \
-                translations/QtLanguage_Ger.ts \
-                translations/QtLanguage_Eng.ts \
-                translations/QtLanguage_Rus.ts
+TRANSLATIONS = \
+        translations/QtLanguage_Ukr.ts \
+        translations/QtLanguage_Ger.ts \
+        translations/QtLanguage_Eng.ts \
+        translations/QtLanguage_Rus.ts
 
 RC_ICONS = icon/keys.ico
 

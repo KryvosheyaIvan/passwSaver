@@ -953,7 +953,121 @@ void userProfiles::createUsersRegFile(void)
     }
 }
 
+bool userProfiles::replaceDBvalue(QString currUser, QString lock,   QString key,   QString description,
+                                  QString newValue, int elementType, QWidget *parent, QString &parentModule)
+{
+    QString errrReason;
 
+    QString strFileContent;
+
+    bool isDBGot = getPwdDB( "Editing DB from table", currUser, strFileContent, parent);
+    if( !isDBGot)
+    {
+        qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "getPwdDB() fail " << endl;
+        // return fail. Could not obtain DB file
+        return isDBGot;
+    }
+
+    // file is in strFileContent...
+
+    QJsonDocument jsDocRoot;
+
+    jsDocRoot = QJsonDocument::fromJson(strFileContent.toUtf8());
+    if( jsDocRoot.isNull() || !jsDocRoot.isObject() || jsDocRoot.isEmpty())
+    {
+        qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "Json parsing error " << endl;
+        return false;
+    }
+
+    QJsonObject jsObjRoot = jsDocRoot.object();
+
+    if( !jsObjRoot.contains("Data"))
+    {
+        // ToDo adding err info msg..
+        return false;
+    }
+
+    // jsValueTemp will contain defferet values through the function
+    QJsonValue jsValueTemp = jsObjRoot.value("Data");
+
+    if( !jsValueTemp.isArray())
+    {
+        // ToDo adding err info msg..
+        return false;
+    }
+
+    QJsonArray jsArrayData = jsValueTemp.toArray();
+
+    // go trough array, looking for default (original) object
+    //here need to find appropriate field
+    QJsonArray::iterator it;
+    QJsonObject jsObjectTemp;
+    int i = 0;
+    for( i = 0, it = jsArrayData.begin(); it != jsArrayData.end(); it++, i++)  //going through all elements of the array
+    {
+        jsValueTemp  = jsArrayData.at(i);
+        jsObjectTemp = jsValueTemp.toObject();
+
+        if( jsObjectTemp.contains("key") && jsObjectTemp.contains("descr") &&  jsObjectTemp.contains("lock"))
+        {
+            QJsonValue jsValKey   = jsObjectTemp.value("key");
+            QJsonValue jsValDescr = jsObjectTemp.value("descr");
+            QJsonValue jsValLock  = jsObjectTemp.value("lock");
+
+            QString strKey   = jsValKey.toString();
+            QString strDescr = jsValDescr.toString();
+            QString strLock  = jsValLock.toString();
+
+            //check for equaity (identity) with input parameters
+            if( strKey == key && strDescr == description && strLock == lock )
+            {
+               //exactly this object must be edited
+                switch(elementType)
+                {
+                case DESCRIPTION:
+                    jsValDescr = QJsonValue(newValue);
+                    break;
+                case PASSWORD:
+                    jsValKey   = QJsonValue(newValue);
+                    break;
+                case RESOURCE:
+                    jsValLock  = QJsonValue(newValue);
+                    break;
+                default:
+                    // fail!
+                    return false;
+                }
+
+                //form new jsObject
+                auto temp = QJsonObject(
+                {
+                    qMakePair(QString("lock"),  jsValLock),
+                    qMakePair(QString("key"),   jsValKey),
+                    qMakePair(QString("descr"), jsValDescr),
+                });
+
+                // replacing...
+                jsArrayData.replace(i, temp);
+
+                // form json document
+                jsObjRoot.remove("Data");
+                jsObjRoot.insert("Data", QJsonValue(jsArrayData));
+
+                //prepare document for writing
+                QJsonDocument jsDocEdited(jsObjRoot);
+
+                bool isWritten = rewritePwdDB("ska", currUser, jsDocEdited, parent);
+
+                /* Normal end of operation */
+                return isWritten;
+            }
+        }
+    }
+
+
+
+    return true;
+}
 
 
 

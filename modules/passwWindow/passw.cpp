@@ -37,6 +37,9 @@ passw::passw(QWidget *parent, QString user) :
     /* Set current username */
     CurrentUser = user;
 
+    /* Error tracking */
+    moduleName = "Passwords DB. ";
+
     /* Set title */
     setWindowTitle(tr("Password Saver"));
 
@@ -85,16 +88,18 @@ void passw::on_linePwdSearch_textChanged(const QString &arg1)
 /* Slot --> Action */
 void passw::initActionsConnections(void)
 {
-   connect(ui->actionAdd,    SIGNAL(triggered()),  this, SLOT(openCreatePasswWindow()));             // new window with a form to create new lock-key pair
+   connect(ui->actionAdd,    SIGNAL(triggered()),  this, SLOT(openCreatePasswWindow()));               // new window with a form to create new lock-key pair
    //connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(openDeletePasswWindow()));             // new window with a form to delete some lock-key pair
-   connect(ui->actionReload, SIGNAL(triggered()),  this, SLOT(updatePwdTable()));                    // reload database
+   connect(ui->actionReload, SIGNAL(triggered()),  this, SLOT(updatePwdTable()));                      // reload database
    connect(ui->actionDelete, SIGNAL(triggered()),  this, SLOT(deletePwdObject()));
-   connect(ui->actionExit,   SIGNAL(triggered()),  this, SLOT(goToSignIn()));
+   connect(ui->actionExit,   SIGNAL(triggered()),  this, SLOT(goToSignIn()));                          // closes current window and launch SignIn window
 
-   //connect(ui->tablePwd,     SIGNAL(cellClicked(int,int)),  this,  SLOT(setCellActivated(int, int)));  // remember activated cell coordinates
-   connect(ui->tablePwd,     SIGNAL(itemSelectionChanged()), this, SLOT(onItemsSelectedChange()));
+   connect(ui->tablePwd,     SIGNAL(cellClicked(int,int)),           this, SLOT(setCellClicked(int, int)));        // remember activated (selected, not clicked) cell coordinates
+   connect(ui->tablePwd,     SIGNAL(itemSelectionChanged()),         this, SLOT(onItemsSelectedChange()));
+   connect(ui->tablePwd,     SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(saveCellEdited(QTableWidgetItem*))); // firing if item content changed (edited)
 }
 
+/* Closes current window and launch SignIn window */
 void passw::goToSignIn(void)
 {
   /*Show initial window*/
@@ -107,6 +112,68 @@ void passw::goToSignIn(void)
   delete this;
 }
 
+void passw::saveCellEdited(QTableWidgetItem* pItemEdited)
+{
+    ui->tablePwd->blockSignals(true);
+
+    QString strMsg = "cell Edited!";
+
+    qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "row edited " + QString::number(sCellUnderEdit.location.row) << endl; //ok
+    qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "num edited " + QString::number(sCellUnderEdit.location.column) << endl;    //ok
+
+    // declare QTableWidgetItem* to hold content of a table cells
+    QTableWidgetItem* itemDescrEdited;
+    QTableWidgetItem* itemLockEdited;
+    QTableWidgetItem* itemPasswEdited;
+
+    // get original items of a row clicked
+    itemDescrEdited = ui->tablePwd->item(sCellUnderEdit.location.row, DESCR_COLUMN);
+    itemLockEdited  = ui->tablePwd->item(sCellUnderEdit.location.row, LOCK_COLUMN);
+    itemPasswEdited = ui->tablePwd->item(sCellUnderEdit.location.row, PWD_COLUMN);
+
+    // save "afterEdit" object, that is, after editing
+    sCellUnderEdit.afterEdit.descr = itemDescrEdited->text();
+    sCellUnderEdit.afterEdit.lock  = itemLockEdited->text();
+    sCellUnderEdit.afterEdit.passw = itemPasswEdited->text();
+
+    int elementType;
+    if( sCellUnderEdit.afterEdit.descr == pItemEdited->text())
+    {
+        //qDebug() <<  __FILE__ << __FUNCTION__<< __LINE__<< "FUNCTION WORKS FINE" << endl;
+        //QMessageBox::information(this,"Edited.FINE", strMsg);
+
+        elementType = userProfiles::DESCRIPTION;
+    }
+    else if(sCellUnderEdit.afterEdit.lock  == pItemEdited->text())
+    {
+           elementType = userProfiles::RESOURCE;
+    }
+    else if(sCellUnderEdit.afterEdit.passw == pItemEdited->text())
+    {
+           elementType = userProfiles::PASSWORD;
+    }
+    else
+    {
+        //fail
+        return;
+    }
+
+    // here need to save changes
+    QString text = pItemEdited->text();
+    bool success = pUserProfiles->replaceDBvalue(CurrentUser, sCellUnderEdit.original.lock, sCellUnderEdit.original.passw, sCellUnderEdit.original.descr, text, elementType, this, this->moduleName);
+
+    if( success)
+    {
+       QMessageBox::information(this,"Edited.FINE.SUCCES!!", strMsg);
+    }
+
+
+
+    ui->tablePwd->blockSignals(false);
+
+}
+
+/* Deletes all selected rows in DB */
 void passw::deletePwdObject(void)
 {
     QString keyToDelete;
@@ -120,9 +187,9 @@ void passw::deletePwdObject(void)
     int idxRowToDelete;
 
     int i = 0;
-    for( i = 0; i < this->sCellClicked.row.size(); i++)
+    for( i = 0; i < this->sCellSelected.row.size(); i++)
     {
-       idxRowToDelete =  sCellClicked.row.at(i);
+       idxRowToDelete =  sCellSelected.row.at(i);
 
        itemDescrToDelete = ui->tablePwd->item(idxRowToDelete, COLUMN_2);
        descrToDelete = itemDescrToDelete->text();
@@ -219,13 +286,29 @@ void passw::onItemsSelectedChange(void)
 }
 
 /* save clicked cell coordinates. Not used */
-void passw::setCellActivated(int row, int column)
+void passw::setCellClicked(int row, int column)
 {
-  qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "setCellActivated()" << endl;
+  qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "row() " << row << endl;
+  qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "column() " << column << endl;
 
   // save clicked cell coordinates
-  ACTIVATE_ROW(row);
-  ACTIVATE_COL(column);
+  sCellUnderEdit.location.row    = row;
+  sCellUnderEdit.location.column = column;
+
+  // declare QTableWidgetItem* to hold content of a table cells
+  QTableWidgetItem* itemDescr;
+  QTableWidgetItem* itemLock;
+  QTableWidgetItem* itemPassw;
+
+  // get original items of a row clicked
+  itemDescr = ui->tablePwd->item(row, DESCR_COLUMN);
+  itemLock  = ui->tablePwd->item(row, LOCK_COLUMN);
+  itemPassw = ui->tablePwd->item(row, PWD_COLUMN);
+
+  // save "original" object, that is, before editing
+  sCellUnderEdit.original.descr = itemDescr->text();
+  sCellUnderEdit.original.lock  = itemLock->text();
+  sCellUnderEdit.original.passw = itemPassw->text();
 }
 
 /* Open new window with New password Form*/
@@ -415,11 +498,17 @@ void passw::resizeMainWindow(QSize sizeTable)
 /* Refills passwords table */
 void passw::updatePwdTable(void)
 {
+    //switch signals OFF. Prevent itemChanged() signal firing at each cell filled
+    ui->tablePwd->blockSignals(true);
+
    //Clear table
     clearPwdTable();
 
     //fill table of pwd,res, descr with data from users pwd .json file
     fillPwdTable();
+
+    //switch signals ON
+    ui->tablePwd->blockSignals(false);
 
     QMessageBox::information(this,"Database reload","Updated!");
 }

@@ -21,14 +21,20 @@ public:
         DESCRIPTION = 0x0002
     };
 
+    /* Work with App users profiles */
     void createUsersRegFile(void);                                                                                     // init file with app users
-
     bool addUserProfile(QString username, QString pswd, QWidget *parent);                                              // registration
     bool Login(QString username, QString pswd, QWidget *parent);                                                       // logging in
 
-    bool addLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent);            // add new resource and password
-    bool deleteLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent);         // remove existing resource and password
+    /* Work with DB file */
+    bool addLockKeyPair(   QString currUser, QString lock,   QString key,   QString description, QWidget *parent);     // add new resource and password
+    bool deleteLockKeyPair(QString currUser, QString lock,   QString key,   QString description, QWidget *parent);     // remove existing resource and password
+
+    bool replaceDBvalue(   QString currUser, QString lock,   QString key,   QString description,
+                           QString newValue, int elementType, QWidget *parent, QString &parentModule);
+
     bool checkNewPassword(QString currUser, QString descr, QString lock, QString key1, QString key2, QWidget *parent); // check new password and resource for correctness
+
 
     QVector<QString> getArrayElement(QString strUsername, int elementType, QWidget *parent);                           // returns array of DB (one type)
 
@@ -45,7 +51,7 @@ private:
                                                                                                                        // lock || key || descr of the DB into vector
     bool isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &loginIdxs, QVector<int> &pwdIdxs, QWidget *parent); // check whether current input object is unique (pwd DB)
 
-    bool getJsUsersReg(QString &errReason, QJsonArray &jsArray, QWidget *parent);
+    bool getJsUsersReg(QString &errReason, QJsonArray &jsArray, QWidget *parent);                                      // Sets content of /users.json into jsArray
 
 signals:
 
