@@ -114,12 +114,12 @@ private slots:
 
     void  updatePwdTable(void);                                    // Refills passwords table
     void  clearPwdTable(void);                                     // clear table
-
-    void  setCellClicked(int row, int column);                     // remembers activated cell coordinates (on table item clicked)
     void  deletePwdObject(void);                                   //
-    void  onItemsSelectedChange(void);                             // Sets activated lines into sCellClicked structure
 
-    void  saveCellEdited(QTableWidgetItem* pItemEdited);
+    /* Pwd table slots */
+    void  setCellClicked(int row, int column);                     // remembers activated cell coordinates (on table item clicked)
+    void  onItemsSelectedChange(void);                             // Sets activated lines into sCellClicked structur
+    void  saveCellEdited(QTableWidgetItem* pItemEdited);           // Edit DB file (when user edits field in the table)
 
 public:
     QString moduleName;

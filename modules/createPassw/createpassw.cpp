@@ -2,6 +2,7 @@
 #include "ui_createpassw.h"
 #include <QMessageBox>
 #include <QDebug>
+#include <QCursor>
 #include "modules/userProfiles/userprofiles.h"
 
 /* Default constructor (must not be used)*/
@@ -44,9 +45,15 @@ createPassw::~createPassw()
     delete ui;
 }
 
-/* When OK button is clicked */
+/* Slot. When OK button is clicked */
 void createPassw::checkInputs(QWidget *parent)
 {
+    QString errMsg = tr("Checking inputs...\n");
+
+    // waiting cursor (sandbox)
+    //just for fun
+    //this->setCursor(Qt::BusyCursor);
+
    /* Get all inputs from text labels */
    QString pwd1        = ui->linePassw1->text();
    QString pwd2        = ui->linePassw2->text();
@@ -55,26 +62,39 @@ void createPassw::checkInputs(QWidget *parent)
    QString currUser    = username;
 
    /* Check inputs for correctness */
-   bool isInputsOk = pUserProfiles->checkNewPassword(currUser, description, resource, pwd1, pwd2, this);
+   bool isInputsOk = pUserProfiles->checkNewPassword(currUser, description, resource, pwd1, pwd2, this, errMsg);
 
    /* If inputs are wrong -> end execution */
-   if( isInputsOk != true) return;
+   if( !isInputsOk)
+   {
+       QMessageBox::information(this,"New password", errMsg);
+       return;
+   }
 
-   bool isNewDataAdded = pUserProfiles->addLockKeyPair(currUser, resource, pwd1, description, this);
+   bool isNewDataAdded = pUserProfiles->addLockKeyPair(currUser, resource, pwd1, description, this, errMsg);
 
    if (isNewDataAdded)
    {
-      QMessageBox::information(this,"New password", "New password added!");
+      QMessageBox::information(this,"New password", tr("New password added!"));
 
       /* Clean fields and Write tips for user */
       clearFields();
 
       hide();
+
+      /* Normal end of operation */
+
    }
+   else
+   {
+      // errMsg now contains error info
+      QMessageBox::information(this,"New password", errMsg);
+   }
+
 
 }
 
-/* Clear text and hide window */
+/* Slot. Cancel button clicked. Clear text and hide window */
 void createPassw::cleanAndHide(QWidget *parent)
 {
    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...Clean" << endl;

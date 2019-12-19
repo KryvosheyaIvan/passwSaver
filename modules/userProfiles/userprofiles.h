@@ -27,13 +27,13 @@ public:
     bool Login(QString username, QString pswd, QWidget *parent);                                                       // logging in
 
     /* Work with DB file */
-    bool addLockKeyPair(   QString currUser, QString lock,   QString key,   QString description, QWidget *parent);     // add new resource and password
-    bool deleteLockKeyPair(QString currUser, QString lock,   QString key,   QString description, QWidget *parent);     // remove existing resource and password
+    bool addLockKeyPair(   QString currUser, QString lock,   QString key,   QString description, QWidget *parent, QString &errMsg);     // add new resource and password
+    bool deleteLockKeyPair(QString currUser, QString lock,   QString key,   QString description, QWidget *parent, QString &errMsg);     // remove existing resource and password
 
     bool replaceDBvalue(   QString currUser, QString lock,   QString key,   QString description,
-                           QString newValue, int elementType, QWidget *parent, QString &parentModule);
+                           QString newValue, int elementType, QWidget *parent, QString &errMsg);
 
-    bool checkNewPassword(QString currUser, QString descr, QString lock, QString key1, QString key2, QWidget *parent); // check new password and resource for correctness
+    bool checkNewPassword(QString currUser, QString descr, QString lock, QString key1, QString key2, QWidget *parent, QString &errMsg); // check new password and resource for correctness
 
 
     QVector<QString> getArrayElement(QString strUsername, int elementType, QWidget *parent);                           // returns array of DB (one type)
@@ -42,12 +42,12 @@ private:
     bool isUsernameExist(QString username, QWidget *parent);                                    // ...in Users file
     bool isPswdExist(QString pswd, QWidget *parent);                                            // ...in Users file
 
-    bool getPwdDB(QString moduleName, QString username, QString &fileContent, QWidget *parent);                    // opens password databse and copies its content into QString
-    bool rewritePwdDB(QString moduleName, QString username, QJsonDocument &jsDoc, QWidget *parent);                // opens password databse and copies jsDocumnet into DB file
+    bool getPwdDB(QString username, QString &fileContent, QWidget *parent, QString &errMsg);                           // opens password databse and copies its content into QString
+    bool rewritePwdDB(QString moduleName, QString username, QJsonDocument &jsDoc, QWidget *parent);                    // opens password databse and copies jsDocumnet into DB file
 
-    bool isJSONvalid(QString strModule, QJsonDocument &jsDoc, QWidget *parent);                                    // check json for validity
+    bool isJSONvalid(QString strModule, QJsonDocument &jsDoc, QWidget *parent);                                        // check json for validity
 
-    QVector<int> getDataOccurences(QString currUser,int elementType,  QString strToCheck, QWidget *parent);            // store lines numbers of occurences of
+    QVector<int> getDataOccurences(QString currUser,int elementType,  QString strToCheck, QWidget *parent, QString &errMsg);            // store lines numbers of occurences of
                                                                                                                        // lock || key || descr of the DB into vector
     bool isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &loginIdxs, QVector<int> &pwdIdxs, QWidget *parent); // check whether current input object is unique (pwd DB)
 

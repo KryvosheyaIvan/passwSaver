@@ -112,14 +112,16 @@ void passw::goToSignIn(void)
   delete this;
 }
 
+/* Finction gets field edited, checks it and call function to edit DB file */
 void passw::saveCellEdited(QTableWidgetItem* pItemEdited)
 {
+    // disable triggering events on table
     ui->tablePwd->blockSignals(true);
 
-    QString strMsg = "cell Edited!";
+    QString strMsg = "Editing table.";
 
-    qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "row edited " + QString::number(sCellUnderEdit.location.row) << endl; //ok
-    qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "num edited " + QString::number(sCellUnderEdit.location.column) << endl;    //ok
+    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "row edited " + QString::number(sCellUnderEdit.location.row) << endl; //ok
+    //qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "num edited " + QString::number(sCellUnderEdit.location.column) << endl;    //ok
 
     // declare QTableWidgetItem* to hold content of a table cells
     QTableWidgetItem* itemDescrEdited;
@@ -136,12 +138,10 @@ void passw::saveCellEdited(QTableWidgetItem* pItemEdited)
     sCellUnderEdit.afterEdit.lock  = itemLockEdited->text();
     sCellUnderEdit.afterEdit.passw = itemPasswEdited->text();
 
+    // determine what column have been edited
     int elementType;
     if( sCellUnderEdit.afterEdit.descr == pItemEdited->text())
     {
-        //qDebug() <<  __FILE__ << __FUNCTION__<< __LINE__<< "FUNCTION WORKS FINE" << endl;
-        //QMessageBox::information(this,"Edited.FINE", strMsg);
-
         elementType = userProfiles::DESCRIPTION;
     }
     else if(sCellUnderEdit.afterEdit.lock  == pItemEdited->text())
@@ -154,21 +154,23 @@ void passw::saveCellEdited(QTableWidgetItem* pItemEdited)
     }
     else
     {
-        //fail
+        // Only text field could be edited! for now...
+        strMsg += tr(" Wrong column edites. Only password, login or description allowed to be edited.");
+        QMessageBox::information(this, tr("Editing field."), strMsg);
         return;
     }
 
     // here need to save changes
     QString text = pItemEdited->text();
-    bool success = pUserProfiles->replaceDBvalue(CurrentUser, sCellUnderEdit.original.lock, sCellUnderEdit.original.passw, sCellUnderEdit.original.descr, text, elementType, this, this->moduleName);
+    bool isDBedited = pUserProfiles->replaceDBvalue(CurrentUser, sCellUnderEdit.original.lock, sCellUnderEdit.original.passw, sCellUnderEdit.original.descr, text, elementType, this, strMsg);
 
-    if( success)
+    if( !isDBedited)
     {
-       QMessageBox::information(this,"Edited.FINE.SUCCES!!", strMsg);
+       QMessageBox::information(this, tr("Editing field."), strMsg);
     }
 
 
-
+   // enable triggering events on table
     ui->tablePwd->blockSignals(false);
 
 }
@@ -176,6 +178,8 @@ void passw::saveCellEdited(QTableWidgetItem* pItemEdited)
 /* Deletes all selected rows in DB */
 void passw::deletePwdObject(void)
 {
+    QString errMsg = tr("Delete button clicked. \n");
+
     QString keyToDelete;
     QString lockToDelete;
     QString descrToDelete;
@@ -184,8 +188,11 @@ void passw::deletePwdObject(void)
     QTableWidgetItem* itemLockToDelete;
     QTableWidgetItem* itemKeyToDelete;
 
+    // define all rows to be deleted,
+    // get object from rows to delete
+    // and call deletion funcrion deleteLockKeyPair()
+    // to delete all rows in for loop
     int idxRowToDelete;
-
     int i = 0;
     for( i = 0; i < this->sCellSelected.row.size(); i++)
     {
@@ -201,21 +208,26 @@ void passw::deletePwdObject(void)
        keyToDelete = itemKeyToDelete->text();
 
       // TO DO. Needed to get string of data to delete!
-      pUserProfiles->deleteLockKeyPair(this->CurrentUser, lockToDelete, keyToDelete, descrToDelete, nullptr);
+      bool isDeleted = pUserProfiles->deleteLockKeyPair(this->CurrentUser, lockToDelete, keyToDelete, descrToDelete, nullptr, errMsg);
+      if(!isDeleted)
+      {
+        // now errMsg will contain reason, why failure
+        QMessageBox::information(this, tr("Password deletion."), errMsg);
+      }
     }
     updatePwdTable();
-    //qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "...SKA!" << endl;
-  /*
-    if (IS_ROW_ACTIVATED())
-  {
-     QMessageBox::information(this,"Clicked","Clicked!deactivate...");
-     DEACTIVATE_CELL();
-  }
-  else
-  {
-    QMessageBox::information(this,"Clicked","Choose item to delete!");
-  }
-  */
+
+      /*
+        if (IS_ROW_ACTIVATED())
+      {
+         QMessageBox::information(this,"Clicked","Clicked!deactivate...");
+         DEACTIVATE_CELL();
+      }
+      else
+      {
+        QMessageBox::information(this,"Clicked","Choose item to delete!");
+      }
+      */
 }
 
 /* Sets activated lines into sCellClicked structure
@@ -285,7 +297,7 @@ void passw::onItemsSelectedChange(void)
 
 }
 
-/* save clicked cell coordinates. Not used */
+/* save clicked cell coordinates */
 void passw::setCellClicked(int row, int column)
 {
   qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "row() " << row << endl;

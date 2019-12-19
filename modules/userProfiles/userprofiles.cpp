@@ -206,7 +206,7 @@ bool userProfiles::Login(QString username, QString pswd, QWidget *parent)
 }
 
 /* add new resource and password */
-bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent)
+bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent, QString &errMsg)
 {
     QString errorReason;
 
@@ -289,7 +289,7 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
                    QString strOldFile;
 
                    //place file content into strOldFile
-                   bool strDBGot = getPwdDB( "Add pwd", currUser, strOldFile, parent);
+                   bool strDBGot = getPwdDB( currUser, strOldFile, parent, errMsg);
 
                    if( !strDBGot)
                    {
@@ -386,51 +386,42 @@ bool userProfiles::addLockKeyPair(QString currUser, QString lock, QString key, Q
 }
 
 /* validation of new password and resource for correctness */
-bool userProfiles::checkNewPassword(QString currUser,QString descr, QString lock, QString key1, QString key2, QWidget *parent)
+bool userProfiles::checkNewPassword(QString currUser,QString descr, QString lock, QString key1, QString key2, QWidget *parent, QString &errMsg)
 {
     /* Check lock */
     if( lock.isEmpty())
     {
-        QMessageBox::information(parent,"New password validation","Resource field is empty!");
+        errMsg += tr("Resource field is empty!");
         return false;
     }
 
     /* Check keys */
     if( key1.isEmpty() || key2.isEmpty() || (key1 != key2))
     {
-        QMessageBox::information(parent,"New password validation","Password must be typed two times and be equal.");
+        errMsg += tr("Password must be typed two times and be equal.");
         return false;
     }
 
     /* Check lengths */
     if( (lock.length() < MIN_STRING_LEN) )
     {
-        QString temp("Resource must be at least ");
-        QString length = QString::number(MIN_STRING_LEN); //convert number to QString
-        QString temp2(" characters long.");
-
         //form string "Resource must be at least X characters long."
-        temp.append(length);
-        temp.append(temp2);
-
-        // "Resource must be at least X characters long."
-        QMessageBox::information(parent,"New password validation", temp);
+        errMsg += tr("Resource must be at least ");
+        errMsg += QString::number(MIN_STRING_LEN); //convert number to QString
+        errMsg += tr(" characters long.");
         return false;
     }
     else if(key1.length() < MIN_STRING_LEN)
     {
-        QString temp("Password must be at least ");
-        QString length = QString::number(MIN_STRING_LEN); //convert number to QString
-        QString temp2(" characters long.");
-
         //form string "Password must be at least X characters long."
-        temp.append(length);
-        temp.append(temp2);
-
-        // "Password must be at least X characters long."
-        QMessageBox::information(parent,"New password validation", temp);
+        errMsg += tr("Password must be at least ");
+        errMsg += QString::number(MIN_STRING_LEN); //convert number to QString
+        errMsg += tr(" characters long.");
         return false;
     }
+
+    //tracing error...
+    errMsg += tr("Checking data entered...Ok ");
 
     /* New fields must be different from other existing field at least in 1 section!
      * old description != new description OR
@@ -439,14 +430,15 @@ bool userProfiles::checkNewPassword(QString currUser,QString descr, QString lock
      */
 
     // store lines numbers of occurences of lock, key, descr of the DB into vector
-    QVector<int> loginMatches = getDataOccurences(currUser, RESOURCE,    lock,  nullptr);
-    QVector<int> pwdMatches   = getDataOccurences(currUser, PASSWORD,    key1,  nullptr);
-    QVector<int> descrMatches = getDataOccurences(currUser, DESCRIPTION, descr, nullptr);
+    QVector<int> loginMatches = getDataOccurences(currUser, RESOURCE,    lock,  nullptr, errMsg);
+    QVector<int> pwdMatches   = getDataOccurences(currUser, PASSWORD,    key1,  nullptr, errMsg);
+    QVector<int> descrMatches = getDataOccurences(currUser, DESCRIPTION, descr, nullptr, errMsg);
 
     bool isSameFields = isSameFieldsExist(descrMatches, loginMatches, pwdMatches, nullptr);
     if( isSameFields)
     {
-        QMessageBox::information(parent,"New password validation","There is already exacty the same password, login and description");
+        // form error message, containing reason
+        errMsg += tr("\nCheck if the same fields in database...Error\nThere is already exactly the same password, login and description in the database.");
         return false;
     }
 
@@ -457,6 +449,8 @@ bool userProfiles::checkNewPassword(QString currUser,QString descr, QString lock
 /* returns array of DB (one type) according to elementType-->(getTypeFlag enum)  */
 QVector<QString> userProfiles::getArrayElement(QString strUsername, int elementType, QWidget *parent)
 {
+    QString errMsg = tr(" Getting array element from DB.");
+
     const QString strResource = "lock";
     const QString strPwd      = "key";
     const QString strDescr    = "descr";
@@ -504,7 +498,7 @@ QVector<QString> userProfiles::getArrayElement(QString strUsername, int elementT
     QJsonDocument jsDocRoot;
     QString strFileContent;
 
-    bool isDBGot = getPwdDB("ska", strUsername, strFileContent, parent);
+    bool isDBGot = getPwdDB(strUsername, strFileContent, parent, errMsg);
     if( !isDBGot)
     {
         QMessageBox::critical(parent, "Loading database", "Internal error.");
@@ -582,7 +576,7 @@ QVector<QString> userProfiles::getArrayElement(QString strUsername, int elementT
  * as a description for objects with indexes 2, 4 and 6
  * in the database
  */
-QVector<int> userProfiles::getDataOccurences(QString currUser,int elementType, QString strToCheck, QWidget *parent)
+QVector<int> userProfiles::getDataOccurences(QString currUser,int elementType, QString strToCheck, QWidget *parent, QString &errMsg)
 {
     QVector<int> vecLinesOccurence;
 
@@ -643,6 +637,7 @@ bool userProfiles::isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &log
     //if at least 1 field is empty, the no occurences could be
     if( descrIdxs.isEmpty() || loginIdxs.isEmpty() || pwdIdxs.isEmpty())
     {
+        /* Normal end 1 */
         // at least one field is unique (no matter what exactly)
         return false;
     }
@@ -676,6 +671,7 @@ bool userProfiles::isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &log
       }
     }
 
+  /* Normal end 2 */
   // no identical occurences in the DB
   return false;
 }
@@ -683,7 +679,7 @@ bool userProfiles::isSameFieldsExist( QVector<int> &descrIdxs, QVector<int> &log
 /* opens password databse and copies its content into QString fileContent
  * or returns fail
  */
-bool userProfiles::getPwdDB(QString moduleName, QString username, QString &fileContent, QWidget *parent)
+bool userProfiles::getPwdDB(QString username, QString &fileContent, QWidget *parent, QString &errMsg)
 {
     /* Open file for Reading */
     QString appDir  = QCoreApplication::applicationDirPath();
@@ -702,14 +698,14 @@ bool userProfiles::getPwdDB(QString moduleName, QString username, QString &fileC
     if( !QDir(dataDir).exists())
     {
         // no folder - no DB
+        errMsg += tr("No folder of Database.");
         return false;
     }
 
     /* Open file with users list */
     if( !fileUsersPwdDB.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
-        qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "open " << endl;
-        QMessageBox::critical(parent, tr("Getting database"), tr("Could not open database."));
+        errMsg += tr("Could not open Database file.");
         return false;
     }
 
@@ -725,7 +721,7 @@ bool userProfiles::getPwdDB(QString moduleName, QString username, QString &fileC
     return true;
 }
 
-bool userProfiles::deleteLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent)
+bool userProfiles::deleteLockKeyPair(QString currUser, QString lock, QString key, QString description, QWidget *parent, QString &errMsg)
 {
     bool isFounded = false;
     const QString moduleName = "Deleting password.";
@@ -734,7 +730,7 @@ bool userProfiles::deleteLockKeyPair(QString currUser, QString lock, QString key
     QString strPwdDB;
 
     //get db content into strPwdDB
-    bool isGotPwdDB = this->getPwdDB(moduleName, currUser, strPwdDB, parent);
+    bool isGotPwdDB = this->getPwdDB(currUser, strPwdDB, parent, errMsg);
     if ( !isGotPwdDB)
     {
         /* fail + info msg */
@@ -954,13 +950,13 @@ void userProfiles::createUsersRegFile(void)
 }
 
 bool userProfiles::replaceDBvalue(QString currUser, QString lock,   QString key,   QString description,
-                                  QString newValue, int elementType, QWidget *parent, QString &parentModule)
+                                  QString newValue, int elementType, QWidget *parent, QString &errMsg)
 {
     QString errrReason;
 
     QString strFileContent;
 
-    bool isDBGot = getPwdDB( "Editing DB from table", currUser, strFileContent, parent);
+    bool isDBGot = getPwdDB( currUser, strFileContent, parent, errMsg);
     if( !isDBGot)
     {
         qDebug() << __FILE__ << __LINE__ << __FUNCTION__ << "getPwdDB() fail " << endl;
